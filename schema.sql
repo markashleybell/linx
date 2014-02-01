@@ -15,7 +15,7 @@ ALTER TABLE links OWNER TO postgres;
 CREATE TABLE tags
 (
   id serial NOT NULL,
-  "name" character varying(50) NOT NULL,
+  tag character varying(50) NOT NULL,
   CONSTRAINT pk_tags PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);

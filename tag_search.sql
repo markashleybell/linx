@@ -5,7 +5,7 @@ FROM
 WHERE
     m1.tag_id = t1.id
 AND
-    (t1.name IN ('search', 'google'))
+    (t1.tag IN ('search', 'google'))
 AND
     l1.id = m1.link_id
 GROUP BY
