@@ -1,4 +1,11 @@
 {% extends "layout.html" %}
+
+{% block query %}
+
+{{ ' '.join(query_terms) }}
+
+{% endblock %}
+
 {% block body %}
 
 <!-- Main component for a primary marketing message or call to action -->
@@ -10,8 +17,13 @@
         </p>
         </div> -->
 
-<h1>Linx</h1>
+{% for result in results %}
 
-<p>{{ result }}</p>
+<p>
+    <a href="{{ result.url }}">{{ result.title }}</a><br />
+    {{ result.abstract }}
+</p>
+
+{% endfor %}
 
 {% endblock %}

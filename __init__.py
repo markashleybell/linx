@@ -38,6 +38,7 @@ def index(page=1):
     offset = (page - 1) * pagesize
     
     query = request.args.get("q")
+    query_terms = []
 
     sql = list_sql
     params = [pagesize, offset]
@@ -49,14 +50,13 @@ def index(page=1):
         params = [tuple(query_terms), len(query_terms), pagesize, offset]
     
     conn = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute(sql, params)
-    dic = cur.fetchall()
+    results = cur.fetchall()
     cur.close()
     conn.close()
 
-    print dic
-    return render_template('index.html', result=dic)
+    return render_template('index.html', results=results, query_terms=query_terms)
 
 # @app.route('/static.html')
 @app.route('/robots.txt')
