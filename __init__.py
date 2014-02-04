@@ -8,24 +8,28 @@ app = Flask(__name__)
 
 app.config.from_pyfile('config.cfg')
 
-paging_sql = """
-             SELECT
-                 l1.*
-             FROM
-                 links l1, tags_links m1, tags t1
-             WHERE
-                 m1.tag_id = t1.id
-             AND
-                 (t1.tag IN ({0}))
-             AND
-                 l1.id = m1.link_id
-             GROUP BY
-                 l1.id
-             HAVING
-                 COUNT(l1.id) = {1}
-             LIMIT %s
-             OFFSET %s
-             """
+list_sql = """
+           SELECT * FROM links ORDER BY id LIMIT %s OFFSET %s;
+           """
+
+query_sql = """
+            SELECT
+                l1.*
+            FROM
+                links l1, tags_links m1, tags t1
+            WHERE
+                m1.tag_id = t1.id
+            AND
+                t1.tag IN %s
+            AND
+                l1.id = m1.link_id
+            GROUP BY
+                l1.id
+            HAVING
+                COUNT(l1.id) = %s
+            LIMIT %s
+            OFFSET %s
+            """
 
 @app.route("/")
 @app.route("/<int:page>")
@@ -35,21 +39,14 @@ def index(page=1):
     
     query = request.args.get("q")
 
-    sql = "SELECT * FROM links ORDER BY id LIMIT %s OFFSET %s;"
+    sql = list_sql
     params = [pagesize, offset]
 
     if query is not None:
         # Try and tidy up the tag query terms a bit
-        query_terms = [s.lower().strip() for s in query.split('|') if s.strip() is not '']
-        # Create parameter placeholders for IN clauses
-        in_list = ','.join('%s' for s in query_terms)
-        # Subsitute the placeholders in the SQL string with the correct values
-        sql = paging_sql.format(in_list, len(query_terms))
-        # Slightly unwieldy, but safe way of supplying the param list
-        params = query_terms.extend([pagesize, offset])
-        print sql
-        print params
-
+        query_terms = [s.lower().strip() for s in query.split(' ') if s.strip() is not '']
+        sql = query_sql
+        params = [tuple(query_terms), len(query_terms), pagesize, offset]
     
     conn = psycopg2.connect(app.config['CONNECTION_STRING'])
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
