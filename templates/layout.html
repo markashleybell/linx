@@ -24,7 +24,7 @@
                         <div class="form-group">
                             <input type="text" placeholder="Enter tags..." name="q" class="form-control" value="{% block query %}{% endblock %}">
                         </div>
-                        <button type="submit" class="btn btn-success">Search</button>
+                        <button type="submit" class="btn btn-primary">Search</button>
                     </form>
                 </div><!--/.nav-collapse -->
             </div>
@@ -32,5 +32,8 @@
         </div> <!-- /container -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script id="update-link-template" type="text/x-handlebars-template">
+
+        </script>
     </body>
 </html>

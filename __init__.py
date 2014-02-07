@@ -3,7 +3,7 @@ import psycopg2.extras
 import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, redirect, url_for
 app = Flask(__name__)
 
 app.config.from_pyfile('config.cfg')
@@ -57,6 +57,10 @@ def index(page=1):
     conn.close()
 
     return render_template('index.html', results=results, query_terms=query_terms)
+
+@app.route("/update-link", methods=['POST'])
+def update_link():
+    return redirect(url_for('index'))
 
 # @app.route('/static.html')
 @app.route('/robots.txt')
