@@ -1,0 +1,18 @@
+.mab-jquery-taginput input {
+    border: none;
+    outline: none;
+    padding: 0 0 2px 0; }
+    .mab-jquery-taginput input::-ms-clear {
+        display: none; }
+.mab-jquery-taginput.form-control {
+    height: 35px; }
+.mab-jquery-taginput .label {
+    font-size: 1em;
+    padding-right: 0.5em;
+    display: inline-block; }
+.mab-jquery-taginput a {
+    text-decoration: none;
+    color: #fff; }
+.mab-jquery-taginput .glyphicon {
+    font-size: 0.85em;
+    vertical-align: -1px; }

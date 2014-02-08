@@ -40,9 +40,11 @@ def index(page=1):
     # Paging variables
     pagesize = app.config['PAGE_SIZE']
     offset = (page - 1) * pagesize
-    # Optional tag query parameters
+    # Optional query parameters
     query = request.args.get("q")
+    link_id = request.args.get("id")
     query_terms = []
+    link = None
     # Set up default SQL/parameters
     sql = list_sql
     params = [pagesize, offset]
@@ -58,9 +60,12 @@ def index(page=1):
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute(sql, params)
     results = cur.fetchall()
+    if link_id is not None:
+        cur.execute("SELECT id, title, url, abstract FROM links WHERE id = %s", [link_id])
+        link = cur.fetchone()
     cur.close()
     conn.close()
-    return render_template('index.html', results=results, query_terms=query_terms)
+    return render_template('index.html', results=results, query_terms=query_terms, link=link)
 
 @app.route("/update-link", methods=['POST'])
 def update_link():
@@ -71,7 +76,10 @@ def update_link():
     tags = request.form['tags']
     conn = psycopg2.connect(app.config['CONNECTION_STRING'])
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s)", [title, url, abstract])
+    if link_id == "0":
+        cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s)", [title, url, abstract])
+    else:
+        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s", [title, url, abstract, link_id])
     conn.commit()
     cur.close()
     conn.close()

@@ -20,15 +20,15 @@
 <form action="/update-link" method="post" role="form">
     <div class="form-group">
         <label for="title">Title</label>
-        <input type="text" class="form-control" name="title" id="title" placeholder="Enter title">
+        <input type="text" class="form-control" name="title" id="title" placeholder="Enter title" value="{{ link.title }}">
     </div>
     <div class="form-group">
         <label for="url">Url</label>
-        <input type="text" class="form-control" name="url" id="url" placeholder="Enter URL">
+        <input type="text" class="form-control" name="url" id="url" placeholder="Enter URL" value="{{ link.url }}">
     </div>
     <div class="form-group">
         <label for="abstract">Abstract</label>
-        <textarea name="abstract" id="abstract" class="form-control" placeholder="Enter abstract"></textarea>
+        <textarea name="abstract" id="abstract" class="form-control" placeholder="Enter abstract">{{ link.abstract }}</textarea>
         <p class="help-block">Example block-level help text here.</p>
     </div>
     <!-- <div class="checkbox">
@@ -38,9 +38,15 @@
     </div> -->
     <div class="form-group">
         <label for="tags">Tags</label>
-        <input type="text" class="form-control" name="tags" id="tags" placeholder="Enter tags">
+        <!-- <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="tag1|tag2|tag3"> -->
+
+        <div class="mab-jquery-taginput form-control">
+            <span class="label label-primary">tag1 <span class="glyphicon glyphicon-remove"></span></span>
+            <input class="mab-jquery-taginput-data" type="hidden" name="tags" id="tags">
+            <input class="mab-jquery-taginput-input" type="text">
+        </div>
     </div>
-    <input type="hidden" name="link_id" id="link_id" value="0">
+    <input type="hidden" name="link_id" id="link_id" value="{{ link.id | default('0') }}">
     <button type="submit" class="btn btn-default btn-primary">Submit</button>
 </form>
 

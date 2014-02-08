@@ -1,0 +1,32 @@
+.mab-jquery-taginput {
+    input {
+        border: none;
+        outline: none;
+        // This padding is only here because IE is weird (SURPRISE) - remove or conditional?
+        padding: 0 0 2px 0;
+        // Remove the IE clear/reset cross
+        &::-ms-clear {
+            display: none;
+        }
+    }
+
+    &.form-control {
+        height: 35px;
+    }
+
+    .label {
+        font-size: 1em;
+        padding-right: 0.5em;
+        display: inline-block;
+    }
+
+    a {
+        text-decoration: none;
+        color: #fff;
+    }
+
+    .glyphicon {
+        font-size: 0.85em;
+        vertical-align: -1px;
+    }
+}
