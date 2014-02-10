@@ -73,14 +73,45 @@ def update_link():
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
-    tags = request.form['tags']
+
     conn = psycopg2.connect(app.config['CONNECTION_STRING'])
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    tag_sql = "SELECT tag, id FROM tags"
+    # Get a dictionary of all this user's tags, with tag as key and id as value
+    dbtags = { k : v for k, v in cur.execute(tag_sql).fetchall() }
+    # Get a list of the posted tags and the file description
+    tags = [tag.strip() for tag in request.form["tags"].split("|")]
+
+    # Delete all the tag joins for this file
+    cur.execute("DELETE FROM tags_links WHERE link_id = ?", [link_id])
+    newtags = []
+    alltags = []
+
+    # Loop through all the posted tags
+    for tag in tags:
+        # If a tag isn't already in the db
+        if tag not in dbtags:
+            cur.execute("INSERT INTO tags (tag) VALUES (%s)", [tag])
+            conn.commit()
+            # Add the new tag and id to the dbtags dict so we don't have to query for it again
+            dbtags[tag] = cur.lastrowid;
+            newtags.append(tag)
+        # Add the tag to the list of tags to be applied to this link
+        alltags.append(dbtags[tag]);
+
     if link_id == "0":
         cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s)", [title, url, abstract])
+        conn.commit()
+        link_id = cur.lastrowid;
     else:
         cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s", [title, url, abstract, link_id])
-    conn.commit()
+        conn.commit()
+
+    for tag_id in alltags.values():
+        # Insert a join record for this tag/file
+        cur.execute("INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)", [tag_id, link_id])
+        conn.commit()
+
     cur.close()
     conn.close()
     return redirect(url_for('index'))
