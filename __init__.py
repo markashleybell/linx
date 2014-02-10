@@ -57,15 +57,15 @@ def index(page=1):
         sql = query_sql
         params = [tuple(query_terms), len(query_terms), pagesize, offset]
     # Get the data
-    conn = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute(sql, params)
     results = cur.fetchall()
     if link_id is not None:
-        cur.execute("SELECT id, title, url, abstract FROM links WHERE id = %s", [link_id])
+        cur.execute("SELECT id, title, url, abstract, tags FROM links WHERE id = %s", [link_id])
         link = cur.fetchone()
     cur.close()
-    conn.close()
+    db.close()
     return render_template('index.html', results=results, query_terms=query_terms, link=link)
 
 
@@ -75,19 +75,27 @@ def update_link():
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
-
-    conn = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("SELECT id, tag FROM tags")
-    # Get a dictionary of all this user's tags, with tag as key and id as value
-    dbtags = { t["tag"] : t["id"] for t in cur.fetchall() }
-    # Get a list of the posted tags and the file description
     tags = [tag.strip() for tag in request.form["tags"].split("|")]
 
-    # Delete all the tag joins for this file
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
+    # Insert or update the basic details
+    if link_id == "0":
+        cur.execute("INSERT INTO links (title, url, abstract, tags) VALUES (%s, %s, %s, %s) RETURNING id", [title, url, abstract, '|'.join(tags)])
+        link_id = cur.fetchone()['id']
+    else:
+        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s, tags = %s WHERE id = %s", [title, url, abstract, '|'.join(tags), link_id])
+    db.commit()
+
+    # Get all of this user's tags from the database
+    cur.execute("SELECT id, tag FROM tags")
+    # Create a dictionary of the existing tags, with tag as key and id as value
+    dbtags = { t["tag"] : t["id"] for t in cur.fetchall() }
+
+    # Delete all the tag joins for this link
     cur.execute("DELETE FROM tags_links WHERE link_id = %s", [link_id])
-    newtags = []
-    alltags = []
+    db.commit()
 
     # Loop through all the posted tags
     for tag in tags:
@@ -96,30 +104,12 @@ def update_link():
             cur.execute("INSERT INTO tags (tag) VALUES (%s) RETURNING id", [tag])
             # Add the new tag and id to the dbtags dict so we don't have to query for it again
             dbtags[tag] = cur.fetchone()['id']
-            newtags.append(tag)
-        # Add the tag to the list of tags to be applied to this link
-        alltags.append(dbtags[tag])
-
-    conn.commit()
-
-    print alltags
-
-    if link_id == "0":
-        cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s) RETURNING id", [title, url, abstract])
-        link_id = cur.fetchone()['id']
-    else:
-        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s", [title, url, abstract, link_id])
-
-    conn.commit()
-
-    for tag_id in alltags:
-        # Insert a join record for this tag/file
-        cur.execute("INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)", [tag_id, link_id])
-
-    conn.commit()
+        # Insert a join record for this tag/link
+        cur.execute("INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)", [dbtags[tag], link_id])
+    db.commit()
 
     cur.close()
-    conn.close()
+    db.close()
 
     return redirect(url_for('index'))
 

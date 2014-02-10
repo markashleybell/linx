@@ -5,10 +5,10 @@ alter sequence tags_id_seq restart with 1;
 alter sequence links_id_seq restart with 1;
 
 INSERT INTO links 
-  (title, url, abstract) 
+  (title, url, abstract, tags) 
 VALUES 
-  ('Google', 'http://www.google.com', 'A search engine'),
-  ('Bing', 'http://www.bing.com', 'Another search engine');
+  ('Google', 'http://www.google.com', 'A search engine', 'search|google'),
+  ('Bing', 'http://www.bing.com', 'Another search engine', 'search|microsoft');
 
 INSERT INTO tags 
   (tag) 

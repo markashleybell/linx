@@ -38,7 +38,7 @@
     </div> -->
     <div class="form-group">
         <label for="tags">Tags</label>
-        <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="tag1|tag2|tag3">
+        <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="{{ link.tags }}">
 
         <!-- <div class="mab-jquery-taginput form-control">
             <span class="label label-primary">tag1 <span class="glyphicon glyphicon-remove"></span></span><input class="mab-jquery-taginput-data" type="hidden" name="tags" id="tags"><input class="mab-jquery-taginput-input" type="text">
@@ -51,8 +51,9 @@
 {% for result in results %}
 
 <p>
-    <a href="{{ result.url }}">{{ result.title }}</a><br />
-    {{ result.abstract }}
+    <a href="{{ result.url }}">{{ result.title }}</a> - <a href="/?id={{ result.id }}">Edit</a><br />
+    {{ result.abstract }}<br />
+    {{ result.tags }}
 </p>
 
 {% endfor %}
