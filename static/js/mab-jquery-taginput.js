@@ -28,6 +28,11 @@
         defaults = {
             typeahead: false,
             typeaheadOptions: {}
+        },
+        KEYCODES = {
+            ENTER: 13,
+            TAB: 9,
+            BACKSPACE: 8
         };
 
     // The actual plugin constructor
@@ -47,8 +52,22 @@
         this.init();
     }
 
+    var cleanArray = function(arr, deleteValue) {
+        if(typeof deleteValue === 'undefined')
+            deleteValue = '';
+
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] == deleteValue) {         
+                arr.splice(i, 1);
+                i--;
+            }
+        }
+
+        return arr;
+    };
+
     var createTagInput = function(input) {
-        var tags = input.val().split('|');
+        var tags = cleanArray(input.val().split('|'));
         var tagLabels = $.map(tags, function(item, index) {
             return '<span class="label label-primary">' + item + ' <span class="glyphicon glyphicon-remove"></span></span>';
         }).join('');
@@ -73,23 +92,42 @@
             var tagInput = createTagInput(input);
             input.replaceWith(tagInput);
 
-            if(this.options.typeahead) {
-                var typeaheadInput = tagInput.find('.mab-jquery-taginput-input');
-                typeaheadInput.typeahead(null, this.options.typeaheadOptions);
-                typeaheadInput.on('keypress', function(e) {
-                    if(e.keyCode == 13) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        var input = $(this);
-                        input.parents('.mab-jquery-taginput')
-                               .find('.mab-jquery-taginput-data')
-                               .before('<span class="label label-primary">' + $(this).val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+            var typeaheadInput = tagInput.find('.mab-jquery-taginput-input');
 
-                        input.val('');
-                        input.typeahead('close');
-                    }
-                });
+            if(this.options.typeahead) {
+                typeaheadInput.typeahead(null, this.options.typeaheadOptions);
             }
+                
+            var typeaheadData = tagInput.find('.mab-jquery-taginput-data');
+
+            typeaheadInput.on('keypress', function(e) {
+                if(e.keyCode == KEYCODES.ENTER) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
+            typeaheadInput.on('keydown', function(e) {
+                
+                var input = $(this);
+
+                if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
+                    typeaheadData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+                    typeaheadData.val(typeaheadData.val() + '|' + input.val());
+                    input.typeahead('close');
+                    input.val('');
+                }
+
+                if(e.keyCode == KEYCODES.TAB) {
+                }
+
+                if(e.keyCode == KEYCODES.BACKSPACE) {
+                    typeaheadData.prev('span.label').remove();
+                    typeaheadData.val(typeaheadData.val().split('|').slice(0, -1).join('|'));
+                    input.typeahead('close');
+                    input.val('');
+                }
+            });
         }
 
         // yourOtherFunction: function(el, options) {
