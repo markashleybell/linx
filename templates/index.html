@@ -8,15 +8,6 @@
 
 {% block body %}
 
-<!-- Main component for a primary marketing message or call to action -->
-<!--         <div class="jumbotron">
-        <h1>Navbar example</h1>
-        <p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work. It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
-        <p>
-        <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
-        </p>
-        </div> -->
-
 <form action="/update-link" method="post" role="form">
     <div class="form-group">
         <label for="title">Title</label>
@@ -31,17 +22,12 @@
         <textarea name="abstract" id="abstract" class="form-control" placeholder="Enter abstract">{{ link.abstract }}</textarea>
         <p class="help-block">Example block-level help text here.</p>
     </div>
-    <!-- <div class="checkbox">
-        <label>
-            <input type="checkbox"> Check me out
-        </label>
-    </div> -->
     <div class="form-group">
         <label for="tags">Tags</label>
         <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="{{ link.tags }}">
 
         <!-- <div class="mab-jquery-taginput form-control">
-            <span class="label label-primary">tag1 <span class="glyphicon glyphicon-remove"></span></span><input class="mab-jquery-taginput-data" type="hidden" name="tags" id="tags"><input class="mab-jquery-taginput-input" type="text">
+            <span class="label label-primary">tag1 <span class="glyphicon glyphicon-remove"></span></span><input class="mab-jquery-taginput-data" type="hidden" name="tags" id="tags" value=""><input class="mab-jquery-taginput-input" type="text">
         </div> -->
     </div>
     <input type="hidden" name="link_id" id="link_id" value="{{ link.id | default('0') }}">

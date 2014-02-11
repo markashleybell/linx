@@ -34,79 +34,33 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/mab-jquery-taginput.js') }}"></script>
         <script type="text/javascript">
 
-            // instantiate the bloodhound suggestion engine
-            // var numbers = new Bloodhound({
-            //     datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.num); },
-            //     queryTokenizer: Bloodhound.tokenizers.whitespace,
-            //     local: [
-            //         { num: 'one' },
-            //         { num: 'two' },
-            //         { num: 'three' },
-            //         { num: 'four' },
-            //         { num: 'five' },
-            //         { num: 'six' },
-            //         { num: 'seven' },
-            //         { num: 'eight' },
-            //         { num: 'nine' },
-            //         { num: 'ten' }
-            //     ]
-            // });
+            $(function(){
 
-            // // initialize the bloodhound suggestion engine
-            // numbers.initialize();
+                // instantiate the bloodhound suggestion engine
+                var tags = new Bloodhound({
+                    datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    local: [
+                        { tag: 'tag1' },
+                        { tag: 'tag2' },
+                        { tag: 'tag3' }
+                    ]
+                });
 
-            // $('.tag-input').typeahead(null, {
-            //     displayKey: 'num',
-            //     source: numbers.ttAdapter()
-            // });
+                // initialize the bloodhound suggestion engine
+                tags.initialize();
+                
+                $('#tags').tagInput({
+                    typeahead: true,
+                    typeaheadOptions: {
+                        displayKey: 'tag',
+                        source: tags.ttAdapter()
+                    }
+                });
 
-            // var anExcitedSource = function(query, cb) {
-            //     var results = $.map(['!', '!!', '!!!'], function(appendage) {
-            //         var datum = { theValue: query + ' ' + appendage };
-            //         return datum;
-            //     });
-            //     cb(results);
-            // };
-
-            // $('.tag-input').typeahead(null, {
-            //     displayKey: 'theValue',
-            //     source: anExcitedSource
-            // });
-
-
-
-            // instantiate the bloodhound suggestion engine
-            var tags = new Bloodhound({
-                datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
-                queryTokenizer: Bloodhound.tokenizers.whitespace,
-                local: [
-                    { tag: 'tag1' },
-                    { tag: 'tag2' },
-                    { tag: 'tag3' }
-                ]
-            });
-
-            // initialize the bloodhound suggestion engine
-            tags.initialize();
-
-            $('.mab-jquery-taginput-input').typeahead(null, {
-                displayKey: 'tag',
-                source: tags.ttAdapter()
-            });
-
-            $('.mab-jquery-taginput-input').on('keypress', function(e) {
-                if(e.keyCode == 13) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    $(this).parents('.mab-jquery-taginput')
-                           .find('.mab-jquery-taginput-data')
-                           .before('<span class="label label-primary">' + $(this).val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
-
-                    $(this).val('');
-                }
             });
 
         </script>
