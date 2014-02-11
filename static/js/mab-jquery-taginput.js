@@ -101,6 +101,9 @@
             var typeaheadData = tagInput.find('.mab-jquery-taginput-data');
 
             typeaheadInput.on('keypress', function(e) {
+
+                var input = $(this);
+
                 if(e.keyCode == KEYCODES.ENTER) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -114,8 +117,8 @@
                 if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
                     typeaheadData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
                     typeaheadData.val(typeaheadData.val() + '|' + input.val());
+                    input.typeahead('val', '');
                     input.typeahead('close');
-                    input.val('');
                 }
 
                 if(e.keyCode == KEYCODES.TAB) {
@@ -124,8 +127,8 @@
                 if(e.keyCode == KEYCODES.BACKSPACE) {
                     typeaheadData.prev('span.label').remove();
                     typeaheadData.val(typeaheadData.val().split('|').slice(0, -1).join('|'));
+                    input.typeahead('val', '');
                     input.typeahead('close');
-                    input.val('');
                 }
             });
         }
