@@ -16,4 +16,5 @@
     color: #fff; }
 .mab-jquery-taginput .glyphicon {
     font-size: 0.85em;
-    vertical-align: -1px; }
+    vertical-align: -1px;
+    cursor: pointer; }

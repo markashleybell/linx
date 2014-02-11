@@ -52,7 +52,7 @@
         this.init();
     }
 
-    var cleanArray = function(arr, deleteValue) {
+    var _cleanArray = function(arr, deleteValue) {
         if(typeof deleteValue === 'undefined')
             deleteValue = '';
 
@@ -66,8 +66,8 @@
         return arr;
     };
 
-    var createTagInput = function(input) {
-        var tags = cleanArray(input.val().split('|'));
+    var _createTagInput = function(input) {
+        var tags = _cleanArray(input.val().split('|'));
         var tagLabels = $.map(tags, function(item, index) {
             return '<span class="label label-primary">' + item + ' <span class="glyphicon glyphicon-remove"></span></span>';
         }).join('');
@@ -89,8 +89,15 @@
             // you can add more functions like the one below and
             // call them like so: this.yourOtherFunction(this.element, this.options).
             var input = $(this.element);
-            var tagInputContainer = createTagInput(input);
+            var tagInputContainer = _createTagInput(input);
             input.replaceWith(tagInputContainer);
+
+            tagInputContainer.on('click', 'span.glyphicon', function(e) {
+                var tag = $(this).parent();
+                var tagText = $.trim(tag.text());
+                tagData.val((tagData.val() + '|').replace(tagText + '|', '').slice(0, -1));
+                tag.remove();
+            });
 
             var tagInput = tagInputContainer.find('.mab-jquery-taginput-input');
 
