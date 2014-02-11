@@ -89,18 +89,20 @@
             // you can add more functions like the one below and
             // call them like so: this.yourOtherFunction(this.element, this.options).
             var input = $(this.element);
-            var tagInput = createTagInput(input);
-            input.replaceWith(tagInput);
+            var tagInputContainer = createTagInput(input);
+            input.replaceWith(tagInputContainer);
 
-            var typeaheadInput = tagInput.find('.mab-jquery-taginput-input');
+            var tagInput = tagInputContainer.find('.mab-jquery-taginput-input');
 
-            if(this.options.typeahead) {
-                typeaheadInput.typeahead(null, this.options.typeaheadOptions);
+            var useTypeAhead = this.options.typeahead;
+
+            if(useTypeAhead) {
+                tagInput.typeahead(null, this.options.typeaheadOptions);
             }
                 
-            var typeaheadData = tagInput.find('.mab-jquery-taginput-data');
+            var tagData = tagInputContainer.find('.mab-jquery-taginput-data');
 
-            typeaheadInput.on('keypress', function(e) {
+            tagInput.on('keypress', function(e) {
 
                 var input = $(this);
 
@@ -110,25 +112,33 @@
                 }
             });
 
-            typeaheadInput.on('keydown', function(e) {
+            tagInput.on('keydown', function(e) {
                 
                 var input = $(this);
 
                 if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
-                    typeaheadData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
-                    typeaheadData.val(typeaheadData.val() + '|' + input.val());
-                    input.typeahead('val', '');
-                    input.typeahead('close');
+                    tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+                    tagData.val(tagData.val() + '|' + input.val());
+                    if(useTypeAhead) {
+                        input.typeahead('val', '');
+                        input.typeahead('close');
+                    } else {
+                        input.val('');
+                    }
                 }
 
                 if(e.keyCode == KEYCODES.TAB) {
                 }
 
-                if(e.keyCode == KEYCODES.BACKSPACE) {
-                    typeaheadData.prev('span.label').remove();
-                    typeaheadData.val(typeaheadData.val().split('|').slice(0, -1).join('|'));
-                    input.typeahead('val', '');
-                    input.typeahead('close');
+                if(e.keyCode == KEYCODES.BACKSPACE && $.trim(input.val()) === '') {
+                    tagData.prev('span.label').remove();
+                    tagData.val(tagData.val().split('|').slice(0, -1).join('|'));
+                    if(useTypeAhead) {
+                        input.typeahead('val', '');
+                        input.typeahead('close');
+                    } else {
+                        input.val('');
+                    }
                 }
             });
         }
