@@ -93,6 +93,7 @@
             input.replaceWith(tagInputContainer);
 
             tagInputContainer.on('click', 'span.glyphicon', function(e) {
+                e.stopPropagation();
                 var tag = $(this).parent();
                 var tagText = $.trim(tag.text());
                 tagData.val((tagData.val() + '|').replace(tagText + '|', '').slice(0, -1));
@@ -148,7 +149,10 @@
                 tagInputContainer.find('input[type=text]').removeClass('h');
             }).on('blur', 'input[type=text]', function(e) {
                 tagInputContainer.find('input[type=text]').addClass('h');
-                tagInput.typeahead('val', '');
+                if(useTypeAhead)
+                    tagInput.typeahead('val', '');
+                else
+                    tagInput.val('');
             });
 
             tagInputContainer.on('click', function(e) {
@@ -157,6 +161,11 @@
                 else
                     tagInputContainer.find('input[type=text]').focus();
             });
+
+            if(useTypeAhead)
+                    tagInputContainer.find('input[type=text].tt-input').blur();
+            else
+                tagInputContainer.find('input[type=text]').blur();
         }
 
         // yourOtherFunction: function(el, options) {
