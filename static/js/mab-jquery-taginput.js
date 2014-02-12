@@ -5,23 +5,7 @@
  * Licensed under the MIT license
  */
 
-// the semi-colon before the function invocation is a safety
-// net against concatenated scripts and/or other plugins
-// that are not closed properly.
 ;(function ( $, window, document, undefined ) {
-
-    // undefined is used here as the undefined global
-    // variable in ECMAScript 3 and is mutable (i.e. it can
-    // be changed by someone else). undefined isn't really
-    // being passed in so we can ensure that its value is
-    // truly undefined. In ES5, undefined can no longer be
-    // modified.
-
-    // window and document are passed through as local
-    // variables rather than as globals, because this (slightly)
-    // quickens the resolution process and can be more
-    // efficiently minified (especially when both are
-    // regularly referenced in your plugin).
 
     // Create the defaults once
     var pluginName = "tagInput",
@@ -29,6 +13,7 @@
             typeahead: false,
             typeaheadOptions: {}
         },
+        // Lookup variables to make keycode handling more readable
         KEYCODES = {
             ENTER: 13,
             TAB: 9,
@@ -38,12 +23,7 @@
     // The actual plugin constructor
     function Plugin(element, options) {
         this.element = element;
-
-        // jQuery has an extend method that merges the
-        // contents of two or more objects, storing the
-        // result in the first object. The first object
-        // is generally empty because we don't want to alter
-        // the default options for future instances of the plugin
+        
         this.options = $.extend({}, defaults, options) ;
 
         this._defaults = defaults;
@@ -52,7 +32,9 @@
         this.init();
     }
 
+    // Remove all entries from an array with a specific value
     var _cleanArray = function(arr, deleteValue) {
+        // If no value has been specified, remove all empty strings
         if(typeof deleteValue === 'undefined')
             deleteValue = '';
 
@@ -66,6 +48,7 @@
         return arr;
     };
 
+    // Function to create the HTML representing the tag input control
     var _createTagInput = function(input) {
         var tags = _cleanArray(input.val().split('|'));
         var tagLabels = $.map(tags, function(item, index) {
@@ -79,98 +62,106 @@
                  '</div>');
     };
 
+    // Shortcut function to clear text from the tag input and close the typeahead
+    var _resetTagInput = function(input, usingTypeAhead) {
+        if(usingTypeAhead) {
+            input.typeahead('val', '');
+            input.typeahead('close');
+        } else {
+            input.val('');
+        }
+    };
+
     Plugin.prototype = {
 
         init: function() {
-            // Place initialization logic here
-            // You already have access to the DOM element and
-            // the options via the instance, e.g. this.element
-            // and this.options
-            // you can add more functions like the one below and
-            // call them like so: this.yourOtherFunction(this.element, this.options).
-            var input = $(this.element);
-            var tagInputContainer = _createTagInput(input);
-            input.replaceWith(tagInputContainer);
+            // Replace the original input with the tag input HTML
+            var originalInput = $(this.element);
+            var tagInputContainer = _createTagInput(originalInput);
+            originalInput.replaceWith(tagInputContainer);
 
-            tagInputContainer.on('click', 'span.glyphicon', function(e) {
-                e.stopPropagation();
-                var tag = $(this).parent();
-                var tagText = $.trim(tag.text());
-                tagData.val((tagData.val() + '|').replace(tagText + '|', '').slice(0, -1));
-                tag.remove();
-            });
-
+            // Boolean to determine whether typeahead.js integration is enabled
+            var usingTypeAhead = this.options.typeahead;
+            // The text input element within the tag control
             var tagInput = tagInputContainer.find('.mab-jquery-taginput-input');
-
-            var useTypeAhead = this.options.typeahead;
-
-            if(useTypeAhead) {
-                tagInput.typeahead(null, this.options.typeaheadOptions);
-            }
-                
+            // The hidden input which is used to store selected tag data
             var tagData = tagInputContainer.find('.mab-jquery-taginput-data');
 
-            tagInput.on('keydown', function(e) {
+            // Set up the typeahead if specified
+            if(usingTypeAhead)
+                tagInput.typeahead(null, this.options.typeaheadOptions);
                 
+            // Handle keydown events on the tag text input
+            tagInput.on('keydown', function(e) {
+                // Cache the reference to the input
                 var input = $(this);
-
+                // If enter is hit, and the input is *not* empty (if the input *is* empty, 
+                // we don't want to prevent the default action, which is submitting the form)
                 if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
+                    // Stop the form being submitted and prevent event bubbling
                     e.preventDefault();
                     e.stopPropagation();
-                }
-
-                if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
+                    // Insert a new tag span before the hidden input
                     tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+                    // Concatenate the existing tag data string with the new tag
                     tagData.val(tagData.val() + '|' + input.val());
-                    if(useTypeAhead) {
-                        input.typeahead('val', '');
-                        input.typeahead('close');
-                    } else {
-                        input.val('');
-                    }
+                    // Reset the tag input
+                    _resetTagInput(input, usingTypeAhead);
                 }
-
-                if(e.keyCode == KEYCODES.TAB) {
-                }
-
+                // If backspace is hit and there's nothing in the input (if the input *isn't* empty, 
+                // we don't want to prevent the default action, which is deleting a character)
                 if(e.keyCode == KEYCODES.BACKSPACE && $.trim(input.val()) === '') {
+                    // Remove the last tag span before the hidden data input
                     tagData.prev('span.label').remove();
+                    // Split the data into an array, remove the last element and join it
+                    // back together again with pipe characters
                     tagData.val(tagData.val().split('|').slice(0, -1).join('|'));
-                    if(useTypeAhead) {
-                        input.typeahead('val', '');
-                        input.typeahead('close');
-                    } else {
-                        input.val('');
-                    }
+                    // Reset the tag input
+                    _resetTagInput(input, usingTypeAhead);
                 }
             });
 
+            // Handle focus and blur on the text input
             tagInputContainer.on('focus', 'input[type=text]', function(e) {
+                // Remove the narrowing class, restoring input to its original width
                 tagInputContainer.find('input[type=text]').removeClass('h');
             }).on('blur', 'input[type=text]', function(e) {
+                // When the tag text input loses focus, add a class which narrows it
+                // to 1px wide (this is to avoid odd visual effects when the tags in 
+                // the control wraps onto multiple lines)
                 tagInputContainer.find('input[type=text]').addClass('h');
-                if(useTypeAhead)
-                    tagInput.typeahead('val', '');
-                else
-                    tagInput.val('');
+                // Reset the tag input
+                _resetTagInput(tagInput, usingTypeAhead);
             });
 
+            // Focus the text input when the control container is clicked, which triggers
+            // the show/hide behaviours defined in the handlers above
             tagInputContainer.on('click', function(e) {
-                if(useTypeAhead)
+                if(usingTypeAhead)
                     tagInputContainer.find('input[type=text].tt-input').focus();
                 else
                     tagInputContainer.find('input[type=text]').focus();
             });
 
-            if(useTypeAhead)
-                    tagInputContainer.find('input[type=text].tt-input').blur();
-            else
-                tagInputContainer.find('input[type=text]').blur();
-        }
+            // Handle tag delete icon click
+            tagInputContainer.on('click', 'span.glyphicon', function(e) {
+                // Don't bubble the click event up to the input container
+                // This would cause the text input to be shown by the container's click event
+                e.stopPropagation();
+                // Get the text of the tag to be removed (parent of this is the label span)
+                var tag = $(this).parent();
+                var tagText = $.trim(tag.text());
+                // Slightly weird code, but basically we tack a pipe char onto the end
+                // of the current tag data string (so that our replace works even if the tag is
+                // the last in the string), remove the tag and return the new string minus 
+                // the final character (which will always be a pipe character)
+                tagData.val((tagData.val() + '|').replace(tagText + '|', '').slice(0, -1));
+                tag.remove();
+            });
 
-        // yourOtherFunction: function(el, options) {
-        //     // some logic
-        // }
+            // Initially blur the text input so it's hidden on load
+            tagInputContainer.find('input[type=text]').blur();
+        }
     };
 
     // A really lightweight plugin wrapper around the constructor,
