@@ -3,7 +3,7 @@ import psycopg2.extras
 import psycopg2.extensions
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-from flask import Flask, render_template, request, send_from_directory, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, redirect, url_for, jsonify
 app = Flask(__name__)
 
 # Load configuration
@@ -113,6 +113,20 @@ def update_link():
 
     return redirect(url_for('index'))
 
+
+@app.route('/tags')
+def tags():
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # Get all of this user's tags from the database
+    cur.execute("SELECT id, tag FROM tags")
+    tags = cur.fetchall()
+
+    cur.close()
+    db.close()
+
+    return jsonify(tags=tags)
 
 # @app.route('/static.html')
 @app.route('/robots.txt')

@@ -43,11 +43,20 @@
                 var tags = new Bloodhound({
                     datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
                     queryTokenizer: Bloodhound.tokenizers.whitespace,
-                    local: [
-                        { tag: 'tag1' },
-                        { tag: 'tag2' },
-                        { tag: 'tag3' }
-                    ]
+                    // local: [
+                    //     { tag: 'tag1' },
+                    //     { tag: 'tag2' },
+                    //     { tag: 'tag3' }
+                    // ]
+                    prefetch: {
+                        // Currently this just reloads all tags on every page refresh
+                        // We'll need to refine this once AJAX updates start happening
+                        thumbprint: new Date().getTime(),
+                        url: '/tags',
+                        filter: function(data) {
+                            return data.tags;
+                        }
+                    }
                 });
 
                 // initialize the bloodhound suggestion engine
