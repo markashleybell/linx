@@ -109,19 +109,14 @@
                 
             var tagData = tagInputContainer.find('.mab-jquery-taginput-data');
 
-            tagInput.on('keypress', function(e) {
-
-                var input = $(this);
-
-                if(e.keyCode == KEYCODES.ENTER) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            });
-
             tagInput.on('keydown', function(e) {
                 
                 var input = $(this);
+
+                if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
 
                 if(e.keyCode == KEYCODES.ENTER && $.trim(input.val()) !== '') {
                     tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
