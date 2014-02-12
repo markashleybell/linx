@@ -106,13 +106,16 @@
                     // Stop the form being submitted and prevent event bubbling
                     e.preventDefault();
                     e.stopPropagation();
-                    // Insert a new tag span before the hidden input
-                    tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
-                    // Concatenate the existing tag data string with the new tag
-                    tagData.val(tagData.val() + '|' + input.val());
-                    // Reset the tag input
-                    _resetTagInput(input, usingTypeAhead);
-                    input.attr('placeholder', '');
+                    // Don't allow the addition of duplicate tags unless explicitly specified
+                    if(allowDuplicates || ($.inArray(input.val(), tagData.val().split('|')) === -1)) {
+                        // Insert a new tag span before the hidden input
+                        tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+                        // Concatenate the existing tag data string with the new tag
+                        tagData.val(tagData.val() + '|' + input.val());
+                        // Reset the tag input
+                        _resetTagInput(input, usingTypeAhead);
+                        input.attr('placeholder', '');
+                    }
                 }
                 // If backspace is hit and there's nothing in the input (if the input *isn't* empty, 
                 // we don't want to prevent the default action, which is deleting a character)
