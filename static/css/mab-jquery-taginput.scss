@@ -3,7 +3,7 @@
         border: none;
         outline: none;
         // This padding is only here because IE is weird (SURPRISE) - remove or conditional?
-        padding: 0 0 2px 0;
+        padding: 1px 0 1px 0;
         // Remove the IE clear/reset cross
         &::-ms-clear {
             display: none;
@@ -13,7 +13,8 @@
         &.h {
             width: 1px;
         }
-        background-color: #999;
+        // Uncomment for visual debugging
+        // background-color: #e0e0e0;
     }
 
     &.form-control {

@@ -10,6 +10,7 @@
     // Create the defaults once
     var pluginName = "tagInput",
         defaults = {
+            allowDuplicates: false,
             typeahead: false,
             typeaheadOptions: {}
         },
@@ -58,7 +59,7 @@
         return $('<div class="mab-jquery-taginput' + ((input.attr('class')) ? ' ' + input.attr('class') : '') + '">' + 
                  tagLabels + 
                  '<input class="mab-jquery-taginput-data" type="hidden" name="' + input.attr('name') + '" id="' + input.attr('name') + '" value="' + input.val() + '">' +
-                 '<input class="mab-jquery-taginput-input" type="text">' + 
+                 '<input class="mab-jquery-taginput-input" type="text" placeholder="' + input.attr('placeholder') + '">' + 
                  '</div>');
     };
 
@@ -82,10 +83,14 @@
 
             // Boolean to determine whether typeahead.js integration is enabled
             var usingTypeAhead = this.options.typeahead;
+            // boolean to determine whether the same tag can be added to the input more than once
+            var allowDuplicates = this.options.allowDuplicates;
             // The text input element within the tag control
             var tagInput = tagInputContainer.find('.mab-jquery-taginput-input');
             // The hidden input which is used to store selected tag data
             var tagData = tagInputContainer.find('.mab-jquery-taginput-data');
+            // Keep hold of the original placeholder text
+            var originalPlaceHolder = tagInput.attr('placeholder');
 
             // Set up the typeahead if specified
             if(usingTypeAhead)
@@ -107,6 +112,7 @@
                     tagData.val(tagData.val() + '|' + input.val());
                     // Reset the tag input
                     _resetTagInput(input, usingTypeAhead);
+                    input.attr('placeholder', '');
                 }
                 // If backspace is hit and there's nothing in the input (if the input *isn't* empty, 
                 // we don't want to prevent the default action, which is deleting a character)
@@ -118,6 +124,8 @@
                     tagData.val(tagData.val().split('|').slice(0, -1).join('|'));
                     // Reset the tag input
                     _resetTagInput(input, usingTypeAhead);
+                    if(tagData.val() === '')
+                        input.attr('placeholder', originalPlaceHolder);
                 }
             });
 
@@ -129,7 +137,8 @@
                 // When the tag text input loses focus, add a class which narrows it
                 // to 1px wide (this is to avoid odd visual effects when the tags in 
                 // the control wraps onto multiple lines)
-                tagInputContainer.find('input[type=text]').addClass('h');
+                if(tagData.val() !== '')
+                    tagInputContainer.find('input[type=text]').addClass('h');
                 // Reset the tag input
                 _resetTagInput(tagInput, usingTypeAhead);
             });
@@ -159,8 +168,11 @@
                 tag.remove();
             });
 
-            // Initially blur the text input so it's hidden on load
-            tagInputContainer.find('input[type=text]').blur();
+            if(tagData.val() !== '') {
+                tagInput.attr('placeholder', '');
+                // Initially blur the text input so it's hidden on load
+                tagInputContainer.find('input[type=text]').blur();
+            }
         }
     };
 

@@ -1,27 +1,26 @@
 .mab-jquery-taginput input {
-  border: none;
-  outline: none;
-  padding: 0 0 2px 0;
-  margin-bottom: 6px;
-  width: 6em;
-  background-color: #999; }
-  .mab-jquery-taginput input::-ms-clear {
-    display: none; }
-  .mab-jquery-taginput input.h {
-    width: 1px; }
+    border: none;
+    outline: none;
+    padding: 1px 0 1px 0;
+    margin-bottom: 6px;
+    width: 6em; }
+    .mab-jquery-taginput input::-ms-clear {
+        display: none; }
+    .mab-jquery-taginput input.h {
+        width: 1px; }
 .mab-jquery-taginput.form-control {
-  height: auto;
-  padding-bottom: 0; }
+    height: auto;
+    padding-bottom: 0; }
 .mab-jquery-taginput .label {
-  font-size: 1em;
-  padding-right: 0.5em;
-  margin-right: 5px;
-  display: inline-block;
-  margin-bottom: 7px; }
+    font-size: 1em;
+    padding-right: 0.5em;
+    margin-right: 5px;
+    display: inline-block;
+    margin-bottom: 7px; }
 .mab-jquery-taginput a {
-  text-decoration: none;
-  color: #fff; }
+    text-decoration: none;
+    color: #fff; }
 .mab-jquery-taginput .glyphicon {
-  font-size: 0.85em;
-  vertical-align: -1px;
-  cursor: pointer; }
+    font-size: 0.85em;
+    vertical-align: -1px;
+    cursor: pointer; }
