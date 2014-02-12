@@ -143,6 +143,20 @@
                     }
                 }
             });
+
+            tagInputContainer.on('focus', 'input[type=text]', function(e) {
+                tagInputContainer.find('input[type=text]').removeClass('h');
+            }).on('blur', 'input[type=text]', function(e) {
+                tagInputContainer.find('input[type=text]').addClass('h');
+                tagInput.typeahead('val', '');
+            });
+
+            tagInputContainer.on('click', function(e) {
+                if(useTypeAhead)
+                    tagInputContainer.find('input[type=text].tt-input').focus();
+                else
+                    tagInputContainer.find('input[type=text]').focus();
+            });
         }
 
         // yourOtherFunction: function(el, options) {

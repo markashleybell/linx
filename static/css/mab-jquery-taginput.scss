@@ -8,16 +8,24 @@
         &::-ms-clear {
             display: none;
         }
+        margin-bottom: 6px;
+        width: 6em;
+        &.h {
+            width: 1px;
+        }
+        background-color: #999;
     }
 
     &.form-control {
-        height: 35px;
+        height: auto;
+        padding-bottom: 0;
     }
 
     .label {
         font-size: 1em;
         padding-right: 0.5em; margin-right: 5px;
         display: inline-block;
+        margin-bottom: 7px;
     }
 
     a {
