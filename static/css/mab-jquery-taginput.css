@@ -1,13 +1,26 @@
 .mab-jquery-taginput input {
-    border: none;
+    border: solid 1px #fff;
     outline: none;
-    padding: 1px 0 1px 0;
-    margin-bottom: 6px;
-    width: 6em; }
-    .mab-jquery-taginput input::-ms-clear {
-        display: none; }
+    width: 6em;
+    height: 20.984375px;
+    padding: 1px 0;
+    font-size: 14px;
+    line-height: 1.21;
+    vertical-align: middle;
+    margin-bottom: 7px; }
     .mab-jquery-taginput input.h {
         width: 1px; }
+    .mab-jquery-taginput input:-moz-placeholder {
+        color: #999999; }
+    .mab-jquery-taginput input::-moz-placeholder {
+        color: #999999;
+        opacity: 1; }
+    .mab-jquery-taginput input:-ms-input-placeholder {
+        color: #999999; }
+    .mab-jquery-taginput input::-webkit-input-placeholder {
+        color: #999999; }
+    .mab-jquery-taginput input::-ms-clear {
+        display: none; }
 .mab-jquery-taginput.form-control {
     height: auto;
     padding-bottom: 0; }

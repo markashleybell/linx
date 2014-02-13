@@ -1,20 +1,47 @@
 .mab-jquery-taginput {
+
     input {
-        border: none;
+        border: solid 1px #fff;
         outline: none;
-        // This padding is only here because IE is weird (SURPRISE) - remove or conditional?
-        padding: 1px 0 1px 0;
+
+        width: 6em;
+        height: 20.984375px;
+        padding: 1px 0;
+        font-size: 14px;
+        line-height: 1.21;
+        vertical-align: middle;
+        margin-bottom: 7px;
+
+        // Narrow the input to 1px for a tidier effect on blur
+        &.h {
+            width: 1px;
+        }
+
+        // Uncomment for visual debugging
+        //background-color: #e0e0e0;
+
+        // Make placeholder text a consistent colour across browsers
+        &:-moz-placeholder {
+            color: #999999;
+        }
+
+        &::-moz-placeholder {
+            color: #999999;
+            opacity: 1;
+        }
+
+        &:-ms-input-placeholder {
+            color: #999999;
+        }
+
+        &::-webkit-input-placeholder {
+            color: #999999;
+        }
+
         // Remove the IE clear/reset cross
         &::-ms-clear {
             display: none;
         }
-        margin-bottom: 6px;
-        width: 6em;
-        &.h {
-            width: 1px;
-        }
-        // Uncomment for visual debugging
-        // background-color: #e0e0e0;
     }
 
     &.form-control {
@@ -24,7 +51,8 @@
 
     .label {
         font-size: 1em;
-        padding-right: 0.5em; margin-right: 5px;
+        padding-right: 0.5em; 
+        margin-right: 5px;
         display: inline-block;
         margin-bottom: 7px;
     }
@@ -39,4 +67,5 @@
         vertical-align: -1px;
         cursor: pointer;
     }
+
 }
