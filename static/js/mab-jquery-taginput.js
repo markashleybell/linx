@@ -52,8 +52,8 @@
     // Function to create the HTML representing the tag input control
     var _createTagInput = function(input) {
         var tags = _cleanArray(input.val().split('|'));
-        var tagLabels = $.map(tags, function(item, index) {
-            return '<span class="label label-primary">' + item + ' <span class="glyphicon glyphicon-remove"></span></span>';
+        var tagLabels = $.map(tags, function(tag, index) {
+            return '<span class="label label-primary" data-tag="' + tag + '">' + tag + ' <span class="glyphicon glyphicon-remove"></span></span>';
         }).join('');
 
         return $('<div class="mab-jquery-taginput' + ((input.attr('class')) ? ' ' + input.attr('class') : '') + '">' + 
@@ -106,15 +106,25 @@
                     // Stop the form being submitted and prevent event bubbling
                     e.preventDefault();
                     e.stopPropagation();
+                    var newTag = input.val();
+                    // Get the index of the tag in the tag data (-1 if not already present)
+                    var tagIndex = $.inArray(newTag, tagData.val().split('|'));
                     // Don't allow the addition of duplicate tags unless explicitly specified
-                    if(allowDuplicates || ($.inArray(input.val(), tagData.val().split('|')) === -1)) {
+                    if(allowDuplicates || (tagIndex === -1)) {
                         // Insert a new tag span before the hidden input
-                        tagData.before('<span class="label label-primary">' + input.val() + ' <span class="glyphicon glyphicon-remove"></span></span>');
+                        tagData.before('<span class="label label-primary" data-tag="' + newTag + '">' + newTag + ' <span class="glyphicon glyphicon-remove"></span></span>');
                         // Concatenate the existing tag data string with the new tag
-                        tagData.val(tagData.val() + '|' + input.val());
+                        tagData.val(tagData.val() + '|' + newTag);
                         // Reset the tag input
                         _resetTagInput(input, usingTypeAhead);
                         input.attr('placeholder', '');
+                    } else {
+                        // Highlight the duplicate tag
+                        var existing = tagInputContainer.find('span.label[data-tag="' + newTag + '"]');
+                        existing.removeClass('label-primary').addClass('label-danger');
+                        setTimeout(function() {
+                            existing.removeClass('label-danger').addClass('label-primary');
+                        }, 1500);
                     }
                 }
                 // If backspace is hit and there's nothing in the input (if the input *isn't* empty, 
