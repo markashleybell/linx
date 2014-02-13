@@ -171,7 +171,9 @@
                 tag.remove();
             });
 
+            // If the control already has some tags in it
             if(tagData.val() !== '') {
+                // Remove the placeholder text
                 tagInput.attr('placeholder', '');
                 // Initially blur the text input so it's hidden on load
                 tagInputContainer.find('input[type=text]').blur();
