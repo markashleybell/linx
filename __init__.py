@@ -75,6 +75,8 @@ def update_link():
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
+    xhr = int(request.form['xhr']) is 1
+
     tags = [tag.strip() for tag in request.form["tags"].split("|")]
 
     db = psycopg2.connect(app.config['CONNECTION_STRING'])
@@ -111,7 +113,10 @@ def update_link():
     cur.close()
     db.close()
 
-    return redirect(url_for('index'))
+    if not xhr:
+        return redirect(url_for('index'))
+    else:
+        return jsonify(success=True)
 
 
 @app.route('/tags')
