@@ -52,7 +52,7 @@ def index(page=1):
     # If any tags were passed in as a query
     if query is not None:
         # Try and tidy up the tag query terms a bit
-        query_terms = [s.lower().strip() for s in query.split(' ') if s.strip() is not '']
+        query_terms = [s.lower().strip() for s in query.split('|') if s.strip() is not '']
         # Use the query SQL
         sql = query_sql
         params = [tuple(query_terms), len(query_terms), pagesize, offset]
@@ -66,7 +66,7 @@ def index(page=1):
         link = cur.fetchone()
     cur.close()
     db.close()
-    return render_template('index.html', results=results, query_terms=query_terms, link=link)
+    return render_template('index.html', results=results, query_terms=query_terms, link=link, link_id=link_id)
 
 
 @app.route("/update-link", methods=['POST'])

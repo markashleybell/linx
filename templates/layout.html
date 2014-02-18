@@ -23,7 +23,7 @@
                 <div class="navbar-collapse collapse">
                     <form class="navbar-form navbar-right" role="form">
                         <div class="form-group">
-                            <input type="text" placeholder="Enter tags..." name="q" class="form-control" value="{% block query %}{% endblock %}">
+                            <input type="text" placeholder="Enter tags..." id="q" name="q" class="form-control" value="{% block query %}{% endblock %}">
                         </div>
                         <button type="submit" class="btn btn-primary">Search</button>
                     </form>
@@ -39,7 +39,7 @@
 
             $(function(){
 
-                // instantiate the bloodhound suggestion engine
+                // Instantiate the Bloodhound suggestion engine
                 var tags = new Bloodhound({
                     datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
                     queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -59,10 +59,9 @@
                     }
                 });
 
-                // initialize the bloodhound suggestion engine
                 tags.initialize();
-                
-                $('#tags').tagInput({
+
+                $('#q, #tags').tagInput({
                     allowDuplicates: false,
                     typeahead: true,
                     typeaheadOptions: {
@@ -70,6 +69,8 @@
                         source: tags.ttAdapter()
                     }
                 });
+
+                $('#results a[rel="external"]').attr('target', '_blank');
 
             });
 

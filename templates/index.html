@@ -2,11 +2,13 @@
 
 {% block query %}
 
-{{ ' '.join(query_terms) }}
+{{ '|'.join(query_terms) }}
 
 {% endblock %}
 
 {% block body %}
+
+{% if link_id %}
 
 <form action="/update-link" method="post" role="form">
     <div class="form-group">
@@ -31,10 +33,14 @@
     <button type="submit" class="btn btn-default btn-primary">Submit</button>
 </form>
 
+{% endif %}
+
+<div id="results">
+
 {% for result in results %}
 
 <p>
-    <a href="{{ result.url }}">{{ result.title }}</a> - <a href="/?id={{ result.id }}">Edit</a><br />
+    <a href="{{ result.url }}" rel="external">{{ result.title }}</a> - <a href="/?id={{ result.id }}">Edit</a><br />
     {{ result.abstract }}<br />
     {% if result.tags %}
     {% for tag in result.tags.split('|') %}
@@ -44,5 +50,7 @@
 </p>
 
 {% endfor %}
+
+</div>
 
 {% endblock %}
