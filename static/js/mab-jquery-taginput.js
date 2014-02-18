@@ -10,6 +10,7 @@
     // Create the defaults once
     var pluginName = "tagInput",
         defaults = {
+            tagDataSeparator: '|',
             allowDuplicates: false,
             typeahead: false,
             typeaheadOptions: {}
@@ -50,8 +51,8 @@
     };
 
     // Function to create the HTML representing the tag input control
-    var _createTagInput = function(input) {
-        var tags = _cleanArray(input.val().split('|'));
+    var _createTagInput = function(input, tagDataSeparator) {
+        var tags = _cleanArray(input.val().split(tagDataSeparator));
         var tagLabels = $.map(tags, function(tag, index) {
             return '<span class="label label-primary" data-tag="' + tag + '">' + tag + ' <span class="glyphicon glyphicon-remove"></span></span>';
         }).join('');
@@ -73,18 +74,44 @@
         }
     };
 
+    var _addTagToDataField = function(tagDataField, separator, tag) {
+        // Concatenate the existing tag data string with the new tag
+        // if the field value wasn't an empty string
+        if($.trim(tagDataField.val()) === '')
+            tagDataField.val(tag);
+        else
+            tagDataField.val(tagDataField.val() + separator + tag);
+    };
+
+    var _removeTagFromDataField = function(tagDataField, separator, tag) {
+        // Slightly weird code, but basically we tack a pipe char onto the end
+        // of the current tag data string (so that our replace works even if the tag is
+        // the last in the string), remove the tag and return the new string minus 
+        // the final character (which will always be a pipe character)
+        tagDataField.val((tagDataField.val() + separator).replace(tag + separator, '').slice(0, -1));
+    };
+
+    var _removeLastTagFromDataField = function(tagDataField, separator) {
+        // Split the data into an array, remove the last element and join it
+        // back together again with pipe characters
+        tagDataField.val(tagDataField.val().split(separator).slice(0, -1).join(separator));
+    };
+
     Plugin.prototype = {
 
         init: function() {
-            // Replace the original input with the tag input HTML
-            var originalInput = $(this.element);
-            var tagInputContainer = _createTagInput(originalInput);
-            originalInput.replaceWith(tagInputContainer);
-
             // Boolean to determine whether typeahead.js integration is enabled
             var usingTypeAhead = this.options.typeahead;
             // boolean to determine whether the same tag can be added to the input more than once
             var allowDuplicates = this.options.allowDuplicates;
+            // Character to use as a separator for the tag data (default is pipe '|')
+            var separator = this.options.tagDataSeparator;
+
+            // Replace the original input with the tag input HTML
+            var originalInput = $(this.element);
+            var tagInputContainer = _createTagInput(originalInput, separator);
+            originalInput.replaceWith(tagInputContainer);
+
             // The text input element within the tag control
             var tagInput = tagInputContainer.find('.mab-jquery-taginput-input');
             // The hidden input which is used to store selected tag data
@@ -108,13 +135,12 @@
                     e.stopPropagation();
                     var newTag = input.val();
                     // Get the index of the tag in the tag data (-1 if not already present)
-                    var tagIndex = $.inArray(newTag, tagData.val().split('|'));
+                    var tagIndex = $.inArray(newTag, tagData.val().split(separator));
                     // Don't allow the addition of duplicate tags unless explicitly specified
                     if(allowDuplicates || (tagIndex === -1)) {
                         // Insert a new tag span before the hidden input
                         tagData.before('<span class="label label-primary" data-tag="' + newTag + '">' + newTag + ' <span class="glyphicon glyphicon-remove"></span></span>');
-                        // Concatenate the existing tag data string with the new tag
-                        tagData.val(tagData.val() + '|' + newTag);
+                        _addTagToDataField(tagData, separator, newTag);
                         // Reset the tag input
                         _resetTagInput(input, usingTypeAhead);
                         input.attr('placeholder', '');
@@ -132,9 +158,7 @@
                 if(e.keyCode == KEYCODES.BACKSPACE && $.trim(input.val()) === '') {
                     // Remove the last tag span before the hidden data input
                     tagData.prev('span.label').remove();
-                    // Split the data into an array, remove the last element and join it
-                    // back together again with pipe characters
-                    tagData.val(tagData.val().split('|').slice(0, -1).join('|'));
+                    _removeLastTagFromDataField(tagData, separator);
                     // Reset the tag input
                     _resetTagInput(input, usingTypeAhead);
                     if(tagData.val() === '')
@@ -173,11 +197,7 @@
                 // Get the text of the tag to be removed (parent of this is the label span)
                 var tag = $(this).parent();
                 var tagText = $.trim(tag.text());
-                // Slightly weird code, but basically we tack a pipe char onto the end
-                // of the current tag data string (so that our replace works even if the tag is
-                // the last in the string), remove the tag and return the new string minus 
-                // the final character (which will always be a pipe character)
-                tagData.val((tagData.val() + '|').replace(tagText + '|', '').slice(0, -1));
+                _removeTagFromDataField(tagData, separator, tagText);
                 tag.remove();
             });
 
