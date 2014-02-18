@@ -2,10 +2,10 @@
 CREATE TABLE links
 (
   id serial NOT NULL,
-  title character varying(50) NOT NULL,
+  title character varying(256) NOT NULL,
   url character varying(256) NOT NULL,
   abstract character varying(512) NULL,
-  tags character varying(512) NULL,
+  tags character varying(256) NULL,
   CONSTRAINT pk_links PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
