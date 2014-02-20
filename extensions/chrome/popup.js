@@ -8,7 +8,12 @@ function onPageInfo(o)  {
 
 // POST the data to the server using XMLHttpRequest
 function addBookmark() {
-    var postUrl = "http://localhost:5000/update-link";
+    var postUrl = localStorage['post_url'];
+    if (!postUrl) {
+        alert('POST Url is not set');
+        return;
+    }
+
     var xhr = new XMLHttpRequest();
 
     // This async request used to work, but now doesn't for some reason...
