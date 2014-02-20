@@ -55,4 +55,41 @@ window.addEventListener("load", function(evt) {
     // Call the getPageInfo function in the background page, injecting content_script.js 
     // into the current HTML page and passing in our onPageInfo function as the callback
     chrome.extension.getBackgroundPage().getPageInfo(onPageInfo);
+
+    var tagJsonUrl = localStorage['tag_json_url'];
+    if (!tagJsonUrl) {
+        alert('Tag JSON Url is not set');
+        return;
+    }
+
+    // Instantiate the Bloodhound suggestion engine
+    var tags = new Bloodhound({
+        datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        // local: [
+        //     { tag: 'tag1' },
+        //     { tag: 'tag2' },
+        //     { tag: 'tag3' }
+        // ]
+        prefetch: {
+            // Currently this just reloads all tags on every page refresh
+            // We'll need to refine this once AJAX updates start happening
+            thumbprint: new Date().getTime(),
+            url: tagJsonUrl,
+            filter: function(data) {
+                return data.tags;
+            }
+        }
+    });
+
+    tags.initialize();
+
+    $('#tags').tagInput({
+        allowDuplicates: false,
+        typeahead: true,
+        typeaheadOptions: {
+            displayKey: 'tag',
+            source: tags.ttAdapter()
+        }
+    });
 });

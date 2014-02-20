@@ -2,6 +2,8 @@
 function save_options() {
     var postUrl = document.getElementById('post_url').value;
     localStorage['post_url'] = postUrl;
+    var tagJsonUrl = document.getElementById('tag_json_url').value;
+    localStorage['tag_json_url'] = tagJsonUrl;
     // Update status to let user know options were saved.
     var status = document.getElementById('status');
     status.innerHTML = 'Options Saved.';
@@ -17,6 +19,11 @@ function restore_options() {
         return;
     }
     document.getElementById('post_url').value = postUrl;
+    var tagJsonUrl = localStorage['tag_json_url'];
+    if (!tagJsonUrl) {
+        return;
+    }
+    document.getElementById('tag_json_url').value = tagJsonUrl;
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);

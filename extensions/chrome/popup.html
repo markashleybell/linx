@@ -40,43 +40,5 @@
                 <input class="btn btn-primary" id="save" type="submit" value="Save Bookmark" />
             </div>
         </form>
-        <script type="text/javascript">
-
-            $(function(){
-
-                // Instantiate the Bloodhound suggestion engine
-                var tags = new Bloodhound({
-                    datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
-                    queryTokenizer: Bloodhound.tokenizers.whitespace,
-                    // local: [
-                    //     { tag: 'tag1' },
-                    //     { tag: 'tag2' },
-                    //     { tag: 'tag3' }
-                    // ]
-                    prefetch: {
-                        // Currently this just reloads all tags on every page refresh
-                        // We'll need to refine this once AJAX updates start happening
-                        thumbprint: new Date().getTime(),
-                        url: 'http://localhost:5000/tags',
-                        filter: function(data) {
-                            return data.tags;
-                        }
-                    }
-                });
-
-                tags.initialize();
-
-                $('#tags').tagInput({
-                    allowDuplicates: false,
-                    typeahead: true,
-                    typeaheadOptions: {
-                        displayKey: 'tag',
-                        source: tags.ttAdapter()
-                    }
-                });
-
-            });
-
-        </script>
     </body>
 </html>
