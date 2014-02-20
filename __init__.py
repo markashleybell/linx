@@ -11,7 +11,7 @@ app.config.from_pyfile('config.cfg')
 
 # Normal (non-query) SQL
 list_sql = """
-           SELECT * FROM links ORDER BY id LIMIT %s OFFSET %s
+           SELECT * FROM links ORDER BY id DESC LIMIT %s OFFSET %s
            """
 
 # Tag query SQL
@@ -30,6 +30,8 @@ query_sql = """
                 l1.id
             HAVING
                 COUNT(l1.id) = %s
+            ORDER BY 
+                l1.id DESC
             LIMIT %s
             OFFSET %s
             """
