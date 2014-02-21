@@ -73,6 +73,8 @@
 
                 $('#results a[rel="external"]').attr('target', '_blank');
 
+                $('li.disabled a').on('click', function(e) { e.preventDefault(); });
+
             });
 
         </script>
