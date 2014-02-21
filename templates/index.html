@@ -58,7 +58,7 @@
     {{ result.abstract }}<br />
     {% if result.tags %}
     {% for tag in result.tags.split('|') %}
-    <span class="label label-default">{{ tag }}</span>
+    <a href="/?q={{ tag }}" class="label label-default label-clickable">{{ tag }}</a>
     {% endfor %}
     {% endif %}
 </p>

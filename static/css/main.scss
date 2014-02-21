@@ -1,0 +1,12 @@
+.navbar-right .mab-jquery-taginput {
+    // width: 250px;
+}
+
+.label-clickable {
+    text-decoration: none;
+    cursor: pointer;
+    &:hover {
+        color: #FFF581;
+        text-decoration: none;
+    }
+}
