@@ -88,6 +88,9 @@ window.addEventListener("load", function(evt) {
         allowDuplicates: false,
         typeahead: true,
         typeaheadOptions: {
+                        highlight: true
+        },
+        typeaheadDatasetOptions: {
             displayKey: 'tag',
             source: tags.ttAdapter()
         }
