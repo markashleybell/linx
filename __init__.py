@@ -11,7 +11,7 @@ app.config.from_pyfile('config.cfg')
 
 # Normal (non-query) SQL
 list_sql = """
-           SELECT * FROM links ORDER BY id DESC LIMIT %s OFFSET %s
+           SELECT * FROM links ORDER BY id DESC
            """
 
 # Tag query SQL
@@ -32,8 +32,6 @@ query_sql = """
                 COUNT(l1.id) = %s
             ORDER BY 
                 l1.id DESC
-            LIMIT %s
-            OFFSET %s
             """
 
 
@@ -43,14 +41,19 @@ def index(page=1):
     # Paging variables
     pagesize = app.config['PAGE_SIZE']
     offset = (page - 1) * pagesize
+    # Other variables
+    link = None
+    results = None
+    paging = None
     # Optional query parameters
     query = request.args.get("q")
     link_id = request.args.get("id")
     query_terms = []
-    link = None
+
     # Set up default SQL/parameters
     sql = list_sql
     params = [pagesize, offset]
+    
     # If any tags were passed in as a query
     if query is not None:
         # Try and tidy up the tag query terms a bit
@@ -58,17 +61,30 @@ def index(page=1):
         # Use the query SQL
         sql = query_sql
         params = [tuple(query_terms), len(query_terms), pagesize, offset]
-    # Get the data
+
+    # Set up the connection
     db = psycopg2.connect(app.config['CONNECTION_STRING'])
     cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute(sql, params)
-    results = cur.fetchall()
+
+    # If a link is being edited, no need to load all the results
     if link_id is not None:
         cur.execute("SELECT id, title, url, abstract, tags FROM links WHERE id = %s", [link_id])
         link = cur.fetchone()
+    else:
+        # Get the total number of results *before* limit/offset
+        cur.execute("SELECT COUNT(*) FROM (" + sql + ") AS total", params[:2])
+        total = int(cur.fetchone()['count'])
+        # Set up paging data for convenience
+        pages = total / pagesize if total % pagesize == 0 else total / pagesize + 1
+        paging = { "page": page, "pagesize": pagesize, "total": total, "pages": pages }
+        # Get the result data
+        cur.execute("SELECT * FROM (" + sql + ") AS results LIMIT %s OFFSET %s", params)
+        results = cur.fetchall()
+
     cur.close()
     db.close()
-    return render_template('index.html', results=results, query_terms=query_terms, link=link, link_id=link_id)
+
+    return render_template('index.html', results=results, query_terms=query_terms, paging=paging, link=link, link_id=link_id)
 
 
 @app.route("/update-link", methods=['POST'])

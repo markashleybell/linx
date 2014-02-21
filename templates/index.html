@@ -33,7 +33,21 @@
     <button type="submit" class="btn btn-default btn-primary">Submit</button>
 </form>
 
-{% endif %}
+{% else %}
+
+{% set query = '|'.join(query_terms) if query_terms else None %}
+
+<ul class="pagination">
+    <li{% if paging.page == 1 %} class="disabled"{% endif %}><a href="/1{% if query %}?q={{ query | urlencode }}{% endif %}">&laquo;</a></li>  
+{% for i in range(1, paging.pages + 1) %}
+    {% if i == paging.page %}
+    <li class="active"><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }} <span class="sr-only">(current)</span></a></li>
+    {% else %}
+    <li><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
+    {% endif %}
+{% endfor %}
+    <li{% if paging.page == paging.pages %} class="disabled"{% endif %}><a href="/{{ paging.pages }}{% if query %}?q={{ query | urlencode }}{% endif %}">&raquo;</a></li>
+</ul>
 
 <div id="results">
 
@@ -52,5 +66,7 @@
 {% endfor %}
 
 </div>
+
+{% endif %}
 
 {% endblock %}

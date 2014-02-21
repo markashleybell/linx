@@ -6,6 +6,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
         <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/mab-jquery-taginput.css') }}" />
+        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/main.css') }}" />
     </head>
     <body>
         <div class="container">
@@ -21,7 +22,7 @@
                     <a class="navbar-brand" href="/">Linx</a>
                 </div>
                 <div class="navbar-collapse collapse">
-                    <form class="navbar-form navbar-right" role="form">
+                    <form class="navbar-form navbar-right" role="form" action="/">
                         <div class="form-group">
                             <input type="text" placeholder="Enter tags..." id="q" name="q" class="form-control" value="{% block query %}{% endblock %}">
                         </div>
