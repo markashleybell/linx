@@ -54,7 +54,7 @@
 {% for result in results %}
 
 <p>
-    <a href="{{ result.url }}" rel="external">{{ result.title }}</a> - <a href="/?id={{ result.id }}">Edit</a><br />
+    <span class="link-title"><a href="{{ result.url }}" rel="external">{{ result.title }}</a> <a class="edit-link" href="/?id={{ result.id }}">Edit</a></span>
     {{ result.abstract }}<br />
     {% if result.tags %}
     {% for tag in result.tags.split('|') %}

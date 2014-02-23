@@ -4,3 +4,12 @@
     .label-clickable:hover {
         color: #FFF581;
         text-decoration: none; }
+
+.link-title {
+    display: block; }
+    .link-title .edit-link {
+        font-size: 0.8em;
+        padding-left: 15px;
+        display: none; }
+    .link-title:hover .edit-link {
+        display: inline; }

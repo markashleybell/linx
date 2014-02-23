@@ -10,3 +10,17 @@
         text-decoration: none;
     }
 }
+
+.link-title {
+    display: block;
+    .edit-link {
+        font-size: 0.8em;
+        padding-left: 15px;
+        display: none;
+    }
+    &:hover {
+        .edit-link {
+            display: inline;
+        }
+    }
+}
