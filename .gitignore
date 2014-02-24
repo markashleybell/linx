@@ -3,3 +3,5 @@
 *.cfg
 *.cfg.live
 .DS_Store
+*.crx
+*.pem
