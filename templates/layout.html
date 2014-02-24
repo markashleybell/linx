@@ -34,55 +34,9 @@
         </div> <!-- /container -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/mab-jquery-taginput.js') }}"></script>
-        <script type="text/javascript">
-
-            $(function(){
-
-                // Instantiate the Bloodhound suggestion engine
-                var tags = new Bloodhound({
-                    datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
-                    queryTokenizer: Bloodhound.tokenizers.whitespace,
-                    // local: [
-                    //     { tag: 'tag1' },
-                    //     { tag: 'tag2' },
-                    //     { tag: 'tag3' }
-                    // ]
-                    prefetch: {
-                        // Currently this just reloads all tags on every page refresh
-                        // We'll need to refine this once AJAX updates start happening
-                        thumbprint: new Date().getTime(),
-                        url: '/tags',
-                        filter: function(data) {
-                            return data.tags;
-                        }
-                    }
-                });
-
-                tags.initialize();
-
-                $('#q, #tags').tagInput({
-                    allowDuplicates: false,
-                    typeahead: true,
-                    typeaheadOptions: {
-                        highlight: true
-                    },
-                    typeaheadDatasetOptions: {
-                        displayKey: 'tag',
-                        source: tags.ttAdapter()
-                    }
-                });
-
-                $('#results a[rel="external"]').attr('target', '_blank');
-
-                $('li.disabled a').on('click', function(e) { e.preventDefault(); });
-
-            });
-
-        </script>
-        <script id="update-link-template" type="text/x-handlebars-template">
-
-        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+        <script id="update-link-template" type="text/x-handlebars-template"></script>
     </body>
 </html>

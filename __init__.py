@@ -35,6 +35,17 @@ query_sql = """
             """
 
 
+# Return all unique substrings of a string with length >= 2
+def unique_substrings(s):
+    seen = set()
+    for k in xrange(2, len(s)+1):
+        for i in xrange(len(s)-k+1):
+            result = s[i:i+k]
+            if result not in seen:
+                seen.add(result)
+                yield result
+
+
 @app.route("/")
 @app.route("/<int:page>")
 def index(page=1):
@@ -149,7 +160,11 @@ def tags():
     cur.close()
     db.close()
 
-    return jsonify(tags=tags)
+    # Return each tag with a list of its unique substrings, 
+    # to allow partial string matching with Bloodhound
+    tags_processed = list([{'tag': t['tag'],'tokens': list(unique_substrings(t['tag']))} for t in tags])
+
+    return jsonify(tags=tags_processed)
 
 # @app.route('/static.html')
 @app.route('/robots.txt')
