@@ -64,16 +64,12 @@ window.addEventListener("load", function(evt) {
 
     // Instantiate the Bloodhound suggestion engine
     var tags = new Bloodhound({
-        datumTokenizer: function(d) { return Bloodhound.tokenizers.whitespace(d.tag); },
+        // Each tag item returned by the /tags endpoint has a tokens property
+        // containing all the unique susbtrings of that tag, so just use it directly
+        datumTokenizer: function(d) { return d.tokens; },
         queryTokenizer: Bloodhound.tokenizers.whitespace,
-        // local: [
-        //     { tag: 'tag1' },
-        //     { tag: 'tag2' },
-        //     { tag: 'tag3' }
-        // ]
         prefetch: {
             // Currently this just reloads all tags on every page refresh
-            // We'll need to refine this once AJAX updates start happening
             thumbprint: new Date().getTime(),
             url: tagJsonUrl,
             filter: function(data) {
