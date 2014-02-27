@@ -1,4 +1,4 @@
-import sys, codecs, re, os, glob, htmlentitydefs
+import codecs, re, os, glob, htmlentitydefs
 
 def unescape(text):
     def fixup(m):
@@ -21,13 +21,13 @@ def unescape(text):
         return text # leave as is
     return re.sub("&#?\w+;", fixup, text)
 
-sys.setrecursionlimit(10000)
 
 def get_data(sets):
     for item in sets:
         match = re.search('<dt><a href="(.*?)".*?>(.*?)</a><dd>(.*)', item, re.IGNORECASE | re.MULTILINE)
         if match:
             yield { 'url': match.group(1), 'title': unescape(match.group(2)), 'abstract': unescape(match.group(3)), 'tags': [] }
+
 
 for f in glob.glob('*.html'):
     source = codecs.open(f, 'r', 'utf-8')
@@ -45,16 +45,15 @@ for f in glob.glob('*.html'):
         for match in re.finditer(r'\s\#([a-z0-9-]+)', r['abstract'], re.IGNORECASE | re.MULTILINE):
             r['tags'].append(match.group(1))
             r['abstract'] = re.sub(r'(\s\#[a-z0-9\-]+)', '', r['abstract'], 0, re.IGNORECASE | re.MULTILINE).strip()
+        r['tags'].append('new')
     
     #print results[0]#['abstract'].encode('utf-8')
 
     output = []
 
     for result in results:
-        output.append("INSERT INTO links (title, url, abstract, tags) VALUES ('" + result['title'].replace("'", "\\'") + "', '" + result['url'] + "', '" + result['abstract'].replace("'", "\\'") + "', '" + '|'.join(result['tags']) + "');")
+        output.append("INSERT INTO links (title, url, abstract, tags) VALUES ('" + result['title'].replace("'", "''") + "', '" + result['url'] + "', '" + result['abstract'].replace("'", "''") + "', '" + '|'.join(result['tags']) + "');")
 
     o = codecs.open(os.path.split(f)[1].replace('html', 'sql'), 'w', 'utf-8')
     o.write(u'\r\n'.join(output))
     o.close()
-
-# INSERT INTO links (title, url, abstract, tags) VALUES ('Google', 'http://www.google.com', 'A search engine', 'search|google');
