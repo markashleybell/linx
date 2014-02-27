@@ -148,6 +148,20 @@ def update_link():
         return jsonify(success=True)
 
 
+@app.route("/delete-link", methods=['POST'])
+def delete_link():
+    link_id = request.form['link_id']
+    xhr = int(request.form['xhr']) is 1
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("DELETE FROM tags_links WHERE tag_id = %s", [link_id])
+    cur.execute("DELETE FROM links WHERE id = %s", [link_id])
+    db.commit()
+    if not xhr:
+        return redirect(url_for('index'))
+    else:
+        return jsonify(success=True)
+
 @app.route('/tags')
 def tags():
     db = psycopg2.connect(app.config['CONNECTION_STRING'])

@@ -34,4 +34,8 @@ $(function(){
 
     $('li.disabled a').on('click', function(e) { e.preventDefault(); });
 
+    $('#delete-form').on('submit', function(e) {
+        return confirm('Are you sure you want to permanently delete this link?');
+    });
+
 });

@@ -28,9 +28,19 @@
         <label for="tags">Tags</label>
         <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="{{ link.tags }}">
     </div>
-    <input type="hidden" name="link_id" id="link_id" value="{{ link.id | default('0') }}">
-    <input type="hidden" name="xhr" id="xhr" value="0">
-    <button type="submit" class="btn btn-default btn-primary">Submit</button>
+    <div class="form-group">
+        <input type="hidden" name="link_id" value="{{ link.id | default('0') }}">
+        <input type="hidden" name="xhr" value="0">
+        <button type="submit" class="btn btn-default btn-primary">Submit</button>
+    </div>
+</form>
+
+<form action="/delete-link" method="post" role="form" id="delete-form">
+    <div class="form-group">
+        <input type="hidden" name="link_id" value="{{ link.id | default('0') }}">
+        <input type="hidden" name="xhr" value="0">
+        <button type="submit" class="btn btn-default">Delete</button>
+    </div>
 </form>
 
 {% else %}
