@@ -22,6 +22,17 @@
                     <a class="navbar-brand" href="/">Linx</a>
                 </div>
                 <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Link Tools</a></li>
+                                <li><a href="#">Manage Tags</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">Settings</a></li>
+                            </ul>
+                        </li>
+                    </ul>
                     <form class="navbar-form navbar-right" role="form" action="/">
                         <div class="form-group">
                             <input type="text" placeholder="Enter tags..." id="q" name="q" class="form-control" value="{% block query %}{% endblock %}">

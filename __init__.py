@@ -1,9 +1,13 @@
 import psycopg2
 import psycopg2.extras
 import psycopg2.extensions
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for, jsonify
+
+# Set up application
 app = Flask(__name__)
 
 # Load configuration
@@ -162,6 +166,7 @@ def delete_link():
     else:
         return jsonify(success=True)
 
+
 @app.route('/tags')
 def tags():
     db = psycopg2.connect(app.config['CONNECTION_STRING'])
@@ -180,10 +185,11 @@ def tags():
 
     return jsonify(tags=tags_processed)
 
-# @app.route('/static.html')
+
 @app.route('/robots.txt')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
+
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=True)
