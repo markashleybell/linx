@@ -117,10 +117,10 @@ def update_link():
     
     # Insert or update the basic details
     if link_id == "0":
-        cur.execute("INSERT INTO links (title, url, abstract, tags) VALUES (%s, %s, %s, %s) RETURNING id", [title, url, abstract, '|'.join(tags)])
+        cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s) RETURNING id", [title, url, abstract])
         link_id = cur.fetchone()['id']
     else:
-        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s, tags = %s WHERE id = %s", [title, url, abstract, '|'.join(tags), link_id])
+        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s", [title, url, abstract, link_id])
     db.commit()
 
     # Get all of this user's tags from the database
@@ -184,6 +184,47 @@ def tags():
     tags_processed = list([{'tag': t['tag'],'tokens': list(unique_substrings(t['tag']))} for t in tags])
 
     return jsonify(tags=tags_processed)
+
+
+@app.route('/manage-tags')
+def manage_tags():
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # Get all of this user's tags from the database
+    cur.execute("SELECT id, tag, (SELECT COUNT(*) FROM tags_links WHERE tags_links.tag_id = tags.id) AS usecount FROM tags ORDER BY tag")
+    tags = cur.fetchall()
+
+    cur.close()
+    db.close()
+
+    return render_template('manage_tags.html', tags=tags)
+
+
+@app.route('/manage-tags-update', methods=['POST'])
+def manage_tags_update():
+    db = psycopg2.connect(app.config['CONNECTION_STRING'])
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # ID of the tag we are going to merge all the others with
+    target_id = int(request.form["target"])
+    # All tags which will be merged with the target
+    merge_tags = [tag.strip() for tag in request.form["tags"].split("|")]
+    cur.execute("SELECT id, tag FROM tags WHERE tag IN %s", [tuple(merge_tags)])
+    # Get all the IDs for the tags to be merged into our target tag
+    ids = [t['id'] for t in cur.fetchall()]
+    # For each tag we merge, update all existing references to 
+    # its ID to the ID of the target, then delete the merged tag
+    for id in ids:
+        cur.execute("UPDATE tags_links SET tag_id = %s WHERE tag_id = %s", [target_id, id])
+        cur.execute("DELETE FROM tags WHERE id = %s", [id])
+
+    db.commit()
+
+    cur.close()
+    db.close()
+
+    return redirect(url_for('manage_tags'))
 
 
 @app.route('/robots.txt')

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block query %}{% endblock %}
+
+{% block body %}
+
+
+
+{% for tag in tags %}
+
+<form action="/manage-tags-update" method="post" role="form" class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-2 control-label" for="tag-{{ tag.id }}-edit">{{ tag.tag }} ({{ tag.usecount }})</label>
+        <div class="col-sm-3">
+            <input type="text" class="form-control" id="tag-{{ tag.id }}-edit" name="tags" value="" placeholder="Select tags to merge..." />
+            <input type="hidden" name="target" value="{{ tag.id }}" />
+        </div>
+        <div class="col-sm-2">
+            <input type="submit" class="btn btn-primary" class="Merge" />
+        </div>
+    </div>
+</form>
+
+{% endfor %}
+
+{% endblock %}
