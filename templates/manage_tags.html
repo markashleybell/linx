@@ -1,26 +1,50 @@
 {% extends "layout.html" %}
 
-{% block query %}{% endblock %}
-
 {% block body %}
 
+<h1>Merge Tags</h1>
 
+<p>Find the 'master' tag on the left, then enter all the tags you want to merge with it on the right.</p>
 
 {% for tag in tags %}
 
 <form action="/manage-tags-update" method="post" role="form" class="form-horizontal">
     <div class="form-group">
-        <label class="col-sm-2 control-label" for="tag-{{ tag.id }}-edit">{{ tag.tag }} ({{ tag.usecount }})</label>
+        <label class="col-sm-2 control-label tag-input-inline" for="tag-{{ tag.id }}-edit">{{ tag.tag }} ({{ tag.usecount }})</label>
         <div class="col-sm-3">
-            <input type="text" class="form-control" id="tag-{{ tag.id }}-edit" name="tags" value="" placeholder="Select tags to merge..." />
+            <input type="text" class="form-control tag-input" id="tag-{{ tag.id }}-edit" name="tags" value="" placeholder="Select tags..." />
             <input type="hidden" name="target" value="{{ tag.id }}" />
         </div>
         <div class="col-sm-2">
-            <input type="submit" class="btn btn-primary" class="Merge" />
+            <input type="submit" class="btn btn-primary tag-input-inline" value="Merge" />
         </div>
     </div>
 </form>
 
 {% endfor %}
+
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript">
+    
+    $(function(){
+
+        $('input.tag-input').tagInput({
+            allowDuplicates: false,
+            typeahead: true,
+            typeaheadOptions: {
+                highlight: true
+            },
+            typeaheadDatasetOptions: {
+                displayKey: 'tag',
+                source: tags.ttAdapter()
+            }
+        });
+
+    });
+
+</script>
 
 {% endblock %}
