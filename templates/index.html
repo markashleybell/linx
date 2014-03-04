@@ -8,43 +8,6 @@
 
 {% block body %}
 
-{% if link_id %}
-
-<form action="/update-link" method="post" role="form">
-    <div class="form-group">
-        <label for="title">Title</label>
-        <input type="text" class="form-control" name="title" id="title" placeholder="Enter title" value="{{ link.title }}">
-    </div>
-    <div class="form-group">
-        <label for="url">Url</label>
-        <input type="text" class="form-control" name="url" id="url" placeholder="Enter URL" value="{{ link.url }}">
-    </div>
-    <div class="form-group">
-        <label for="abstract">Abstract</label>
-        <textarea name="abstract" id="abstract" class="form-control" placeholder="Enter abstract">{{ link.abstract }}</textarea>
-        <!-- <p class="help-block">Example block-level help text here.</p> -->
-    </div>
-    <div class="form-group">
-        <label for="tags">Tags</label>
-        <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="{{ link.tags }}">
-    </div>
-    <div class="form-group">
-        <input type="hidden" name="link_id" value="{{ link.id | default('0') }}">
-        <input type="hidden" name="xhr" value="0">
-        <button type="submit" class="btn btn-default btn-primary">Submit</button>
-    </div>
-</form>
-
-<form action="/delete-link" method="post" role="form" id="delete-form">
-    <div class="form-group">
-        <input type="hidden" name="link_id" value="{{ link.id | default('0') }}">
-        <input type="hidden" name="xhr" value="0">
-        <button type="submit" class="btn btn-default">Delete</button>
-    </div>
-</form>
-
-{% else %}
-
 {% set query = '|'.join(query_terms) if query_terms else None %}
 
 <ul class="pagination">
@@ -64,7 +27,7 @@
 {% for result in results %}
 
 <p>
-    <span class="link-title"><a href="{{ result.url }}" rel="external">{{ result.title }}</a> <a class="edit-link" href="/?id={{ result.id }}">Edit</a></span>
+    <span class="link-title"><a href="{{ result.url }}" rel="external">{{ result.title }}</a> <a class="edit-link" href="/links/{{ result.id }}">Edit</a></span>
     {{ result.abstract }}<br />
     {% if result.tags %}
     {% for tag in result.tags.split('|') %}
@@ -76,7 +39,5 @@
 {% endfor %}
 
 </div>
-
-{% endif %}
 
 {% endblock %}

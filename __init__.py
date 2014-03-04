@@ -1,17 +1,69 @@
 import psycopg2
 import psycopg2.extras
 import psycopg2.extensions
+from psycopg2.pool import ThreadedConnectionPool
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for, jsonify
+from contextlib import contextmanager
+
+
+@contextmanager
+def get_connection():
+    """Connection factory for pooled dbconnections"""
+    conn = connection_pool.getconn()
+    try:
+        yield conn
+    except Exception:
+        conn.rollback()
+        raise
+    else:
+        conn.commit()
+    finally:
+        connection_pool.putconn(conn)
+
+
+def unique_substrings(s):
+    """Return all unique substrings of a string with length >= 2"""
+    seen = set()
+    for k in xrange(2, len(s)+1):
+        for i in xrange(len(s)-k+1):
+            result = s[i:i+k]
+            if result not in seen:
+                seen.add(result)
+                yield result
+
+
+def insert_and_associate_tags(conn, cur, link_id, tags):
+    """Given a list of tags and a link ID, insert any tags which don't already
+    exist in the database, then associate this link with all the tags"""
+    # Get all of this user's tags from the database
+    cur.execute('SELECT id, tag FROM tags')
+    # Create a dictionary of the existing tags, with tag as key and id as value
+    dbtags = { t['tag'] : t['id'] for t in cur.fetchall() }
+    # Delete all the tag joins for this link
+    cur.execute('DELETE FROM tags_links WHERE link_id = %s', [link_id])
+    conn.commit()
+    # Loop through all the posted tags
+    for tag in tags:
+        # If a tag isn't already in the db
+        if tag not in dbtags:
+            cur.execute('INSERT INTO tags (tag) VALUES (%s) RETURNING id', [tag])
+            # Add the new tag and id to the dbtags dict so we don't have to query for it again
+            dbtags[tag] = cur.fetchone()['id']
+        # Insert a join record for this tag/link
+        cur.execute('INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)', [dbtags[tag], link_id])
+
 
 # Set up application
 app = Flask(__name__)
-
 # Load configuration
 app.config.from_pyfile('config.cfg')
+# Set up - connection pool
+connection_pool = ThreadedConnectionPool(1, 20, app.config['CONNECTION_STRING'])
+
 
 # Normal (non-query) SQL
 list_sql = """
@@ -39,30 +91,17 @@ query_sql = """
             """
 
 
-# Return all unique substrings of a string with length >= 2
-def unique_substrings(s):
-    seen = set()
-    for k in xrange(2, len(s)+1):
-        for i in xrange(len(s)-k+1):
-            result = s[i:i+k]
-            if result not in seen:
-                seen.add(result)
-                yield result
-
-
-@app.route("/")
-@app.route("/<int:page>")
+@app.route('/')
+@app.route('/<int:page>')
 def index(page=1):
     # Paging variables
     pagesize = app.config['PAGE_SIZE']
     offset = (page - 1) * pagesize
     # Other variables
-    link = None
     results = None
     paging = None
     # Optional query parameters
-    query = request.args.get("q")
-    link_id = request.args.get("id")
+    query = request.args.get('q')
     query_terms = []
 
     # Set up default SQL/parameters
@@ -78,106 +117,81 @@ def index(page=1):
         params = [tuple(query_terms), len(query_terms), pagesize, offset]
 
     # Set up the connection
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # If a link is being edited, no need to load all the results
-    if link_id is not None:
-        cur.execute("SELECT id, title, url, abstract, tags FROM links WHERE id = %s", [link_id])
-        link = cur.fetchone()
-    else:
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         # Get the total number of results *before* limit/offset
-        cur.execute("SELECT COUNT(*) FROM (" + sql + ") AS total", params[:2])
+        cur.execute('SELECT COUNT(*) FROM (' + sql + ') AS total', params[:2])
         total = int(cur.fetchone()['count'])
         # Set up paging data for convenience
         pages = total / pagesize if total % pagesize == 0 else total / pagesize + 1
-        paging = { "page": page, "pagesize": pagesize, "total": total, "pages": pages }
+        paging = { 'page': page, 'pagesize': pagesize, 'total': total, 'pages': pages }
         # Get the result data
-        cur.execute("SELECT * FROM (" + sql + ") AS results LIMIT %s OFFSET %s", params)
+        cur.execute('SELECT * FROM (' + sql + ') AS results LIMIT %s OFFSET %s', params)
         results = cur.fetchall()
 
-    cur.close()
-    db.close()
-
-    return render_template('index.html', results=results, query_terms=query_terms, paging=paging, link=link, link_id=link_id)
+    return render_template('index.html', results=results, query_terms=query_terms, paging=paging)
 
 
-@app.route("/update-link", methods=['POST'])
-def update_link():
-    link_id = request.form['link_id']
+@app.route('/links', methods=['POST'])
+def link_create():
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
-    xhr = int(request.form['xhr']) is 1
+    tags = [tag.strip() for tag in request.form['tags'].split('|')]
 
-    tags = [tag.strip() for tag in request.form["tags"].split("|")]
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s) RETURNING id', [title, url, abstract])
+        id = cur.fetchone()['id']
+        insert_and_associate_tags(conn, cur, id, tags)
 
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    return jsonify(success=True)
+
+
+@app.route('/links/new', methods=['GET'])
+@app.route('/links/<int:id>', methods=['GET'])
+def link_retrieve(id=0):
+    link = None
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('SELECT id, title, url, abstract, tags FROM links WHERE id = %s', [id])
+        link = cur.fetchone()
+
+    return render_template('link.html', link=link)    
+
+
+@app.route('/links/<int:id>', methods=['POST'])
+def link_update(id):
+    title = request.form['title']
+    url = request.form['url']
+    abstract = request.form['abstract']
+    tags = [tag.strip() for tag in request.form['tags'].split('|')]
+
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s', [title, url, abstract, id])
+        insert_and_associate_tags(conn, cur, id, tags)
+
+    return jsonify(success=True)
+
+
+@app.route('/links/<int:id>', methods=['DELETE'])
+def link_delete(id):
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('DELETE FROM tags_links WHERE link_id = %s', [id])
+        cur.execute('DELETE FROM links WHERE id = %s', [id])
     
-    # Insert or update the basic details
-    if link_id == "0":
-        cur.execute("INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s) RETURNING id", [title, url, abstract])
-        link_id = cur.fetchone()['id']
-    else:
-        cur.execute("UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s", [title, url, abstract, link_id])
-    db.commit()
-
-    # Get all of this user's tags from the database
-    cur.execute("SELECT id, tag FROM tags")
-    # Create a dictionary of the existing tags, with tag as key and id as value
-    dbtags = { t["tag"] : t["id"] for t in cur.fetchall() }
-
-    # Delete all the tag joins for this link
-    cur.execute("DELETE FROM tags_links WHERE link_id = %s", [link_id])
-    db.commit()
-
-    # Loop through all the posted tags
-    for tag in tags:
-        # If a tag isn't already in the db
-        if tag not in dbtags:
-            cur.execute("INSERT INTO tags (tag) VALUES (%s) RETURNING id", [tag])
-            # Add the new tag and id to the dbtags dict so we don't have to query for it again
-            dbtags[tag] = cur.fetchone()['id']
-        # Insert a join record for this tag/link
-        cur.execute("INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)", [dbtags[tag], link_id])
-    db.commit()
-
-    cur.close()
-    db.close()
-
-    if not xhr:
-        return redirect(url_for('index'))
-    else:
-        return jsonify(success=True)
-
-
-@app.route("/delete-link", methods=['POST'])
-def delete_link():
-    link_id = request.form['link_id']
-    xhr = int(request.form['xhr']) is 1
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("DELETE FROM tags_links WHERE tag_id = %s", [link_id])
-    cur.execute("DELETE FROM links WHERE id = %s", [link_id])
-    db.commit()
-    if not xhr:
-        return redirect(url_for('index'))
-    else:
-        return jsonify(success=True)
+    return jsonify(success=True)
 
 
 @app.route('/tags')
 def tags():
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # Get all of this user's tags from the database
-    cur.execute("SELECT id, tag FROM tags")
-    tags = cur.fetchall()
-
-    cur.close()
-    db.close()
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Get all of this user's tags from the database
+        cur.execute('SELECT id, tag FROM tags')
+        tags = cur.fetchall()
 
     # Return each tag with a list of its unique substrings, 
     # to allow partial string matching with Bloodhound
@@ -188,41 +202,31 @@ def tags():
 
 @app.route('/manage-tags')
 def manage_tags():
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # Get all of this user's tags from the database
-    cur.execute("SELECT id, tag, (SELECT COUNT(*) FROM tags_links WHERE tags_links.tag_id = tags.id) AS usecount FROM tags ORDER BY tag")
-    tags = cur.fetchall()
-
-    cur.close()
-    db.close()
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Get all of this user's tags from the database
+        cur.execute('SELECT id, tag, (SELECT COUNT(*) FROM tags_links WHERE tags_links.tag_id = tags.id) AS usecount FROM tags ORDER BY tag')
+        tags = cur.fetchall()
 
     return render_template('manage_tags.html', tags=tags)
 
 
 @app.route('/manage-tags-update', methods=['POST'])
 def manage_tags_update():
-    db = psycopg2.connect(app.config['CONNECTION_STRING'])
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-    # ID of the tag we are going to merge all the others with
-    target_id = int(request.form["target"])
-    # All tags which will be merged with the target
-    merge_tags = [tag.strip() for tag in request.form["tags"].split("|")]
-    cur.execute("SELECT id, tag FROM tags WHERE tag IN %s", [tuple(merge_tags)])
-    # Get all the IDs for the tags to be merged into our target tag
-    ids = [t['id'] for t in cur.fetchall()]
-    # For each tag we merge, update all existing references to 
-    # its ID to the ID of the target, then delete the merged tag
-    for id in ids:
-        cur.execute("UPDATE tags_links SET tag_id = %s WHERE tag_id = %s", [target_id, id])
-        cur.execute("DELETE FROM tags WHERE id = %s", [id])
-
-    db.commit()
-
-    cur.close()
-    db.close()
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # ID of the tag we are going to merge all the others with
+        target_id = int(request.form['target'])
+        # All tags which will be merged with the target
+        merge_tags = [tag.strip() for tag in request.form['tags'].split('|')]
+        cur.execute('SELECT id, tag FROM tags WHERE tag IN %s', [tuple(merge_tags)])
+        # Get all the IDs for the tags to be merged into our target tag
+        ids = [t['id'] for t in cur.fetchall()]
+        # For each tag we merge, update all existing references to 
+        # its ID to the ID of the target, then delete the merged tag
+        for id in ids:
+            cur.execute('UPDATE tags_links SET tag_id = %s WHERE tag_id = %s', [target_id, id])
+            cur.execute('DELETE FROM tags WHERE id = %s', [id])
 
     return redirect(url_for('manage_tags'))
 
@@ -232,5 +236,5 @@ def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True, threaded=True)

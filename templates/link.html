@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<form action="/links{{ '/%s' % link.id if link.id }}" method="post" role="form" id="update-form">
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" name="title" id="title" placeholder="Enter title" value="{{ link.title }}">
+    </div>
+    <div class="form-group">
+        <label for="url">Url</label>
+        <input type="text" class="form-control" name="url" id="url" placeholder="Enter URL" value="{{ link.url }}">
+    </div>
+    <div class="form-group">
+        <label for="abstract">Abstract</label>
+        <textarea name="abstract" id="abstract" class="form-control" placeholder="Enter abstract">{{ link.abstract }}</textarea>
+        <!-- <p class="help-block">Example block-level help text here.</p> -->
+    </div>
+    <div class="form-group">
+        <label for="tags">Tags</label>
+        <input type="text" class="form-control tag-input" name="tags" id="tags" placeholder="Enter tags" value="{{ link.tags }}">
+    </div>
+    <div class="form-group">
+        <input type="hidden" name="link_id" value="{{ link.id }}">
+        <button type="submit" class="btn btn-default btn-primary">Submit</button>
+    </div>
+</form>
+
+{% if link.id %}
+
+<form action="/links/{{ link.id }}" method="get" role="form" id="delete-form">
+    <div class="form-group">
+        <button type="submit" class="btn btn-default">Delete</button>
+    </div>
+</form>
+
+{% endif %}
+
+{% endblock %}

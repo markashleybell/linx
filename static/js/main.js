@@ -34,8 +34,33 @@ $(function(){
 
     $('li.disabled a').on('click', function(e) { e.preventDefault(); });
 
+    $('#update-form').on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            data: $form.serialize(),
+            type: 'POST'
+        }).done(function(data, status, req) {
+            window.location = '/';
+        }).fail(function(req, status, error) {
+            alert('Couldn\'t update link: ' + error);
+        });
+    });
+
     $('#delete-form').on('submit', function(e) {
-        return confirm('Are you sure you want to permanently delete this link?');
+        e.preventDefault();
+        if(confirm('Are you sure you want to permanently delete this link?')) {
+            var $form = $(this);
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'DELETE'
+            }).done(function(data, status, req) {
+                window.location = '/';
+            }).fail(function(req, status, error) {
+                alert('Couldn\'t delete link: ' + error);
+            });
+        }
     });
 
 });
