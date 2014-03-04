@@ -236,7 +236,8 @@ def manage_tags_update():
         # For each tag we merge, update all existing references to 
         # its ID to the ID of the target, then delete the merged tag
         for id in ids:
-            cur.execute('UPDATE tags_links SET tag_id = %s WHERE tag_id = %s', [target_id, id])
+            cur.execute('UPDATE tags_links SET tag_id = %s WHERE tag_id = %s AND NOT EXISTS (SELECT link_id FROM tags_links tl WHERE tl.tag_id = %s AND tl.link_id = tags_links.link_id)', [target_id, id, target_id])
+            cur.execute('DELETE FROM tags_links WHERE tag_id = %s', [id])
             cur.execute('DELETE FROM tags WHERE id = %s', [id])
 
     return redirect(url_for('manage_tags'))

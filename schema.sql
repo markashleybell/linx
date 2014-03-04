@@ -34,7 +34,20 @@ WITH (OIDS=FALSE);
 
 ALTER TABLE tags_links OWNER TO postgres;
 
--- Function to update display tags field 
+-- Function to update display tags fields after delete
+CREATE OR REPLACE FUNCTION update_display_tags_delete() RETURNS trigger AS $update_display_tags_delete$
+    BEGIN
+        UPDATE links SET tags = (SELECT string_agg(tag, '|') FROM tags INNER JOIN tags_links ON tags_links.tag_id = tags.id WHERE tags_links.link_id = old.link_id) WHERE id = old.link_id;
+        RETURN NULL;
+    END;
+$update_display_tags_delete$ LANGUAGE plpgsql;
+
+-- Trigger to call display tag update on tag join table update
+-- DROP TRIGGER update_display_tags_delete ON tags_links;
+CREATE TRIGGER update_display_tags_delete AFTER DELETE ON tags_links
+    FOR EACH ROW EXECUTE PROCEDURE update_display_tags_delete();
+
+-- Function to update display tags fields after insert or update
 CREATE OR REPLACE FUNCTION update_display_tags() RETURNS trigger AS $update_display_tags$
     BEGIN
         UPDATE links SET tags = (SELECT string_agg(tag, '|') FROM tags INNER JOIN tags_links ON tags_links.tag_id = tags.id WHERE tags_links.link_id = new.link_id) WHERE id = new.link_id;
@@ -43,7 +56,6 @@ CREATE OR REPLACE FUNCTION update_display_tags() RETURNS trigger AS $update_disp
 $update_display_tags$ LANGUAGE plpgsql;
 
 -- Trigger to call display tag update on tag join table update
-DROP TRIGGER update_display_tags ON tags_links;
+-- DROP TRIGGER update_display_tags ON tags_links;
 CREATE TRIGGER update_display_tags AFTER INSERT OR UPDATE ON tags_links
     FOR EACH ROW EXECUTE PROCEDURE update_display_tags();
-
