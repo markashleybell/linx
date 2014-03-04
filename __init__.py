@@ -132,6 +132,17 @@ def index(page=1):
     return render_template('index.html', results=results, query_terms=query_terms, paging=paging)
 
 
+@app.route('/links', methods=['GET'])
+def link_list():
+    links = None
+    with get_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('SELECT id, title, url, abstract, tags FROM links', [])
+        links = cur.fetchall()
+
+    return jsonify(links=[{'id': l['id'], 'title': l['title'], 'url': l['url'], 'abstract': l['abstract'], 'tags': l['tags'].split('|')} for l in links])
+
+
 @app.route('/links', methods=['POST'])
 def link_create():
     title = request.form['title']
@@ -145,7 +156,7 @@ def link_create():
         id = cur.fetchone()['id']
         insert_and_associate_tags(conn, cur, id, tags)
 
-    return jsonify(success=True)
+    return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
 @app.route('/links/new', methods=['GET'])
@@ -172,7 +183,7 @@ def link_update(id):
         cur.execute('UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s', [title, url, abstract, id])
         insert_and_associate_tags(conn, cur, id, tags)
 
-    return jsonify(success=True)
+    return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
 @app.route('/links/<int:id>', methods=['DELETE'])
@@ -182,7 +193,7 @@ def link_delete(id):
         cur.execute('DELETE FROM tags_links WHERE link_id = %s', [id])
         cur.execute('DELETE FROM links WHERE id = %s', [id])
     
-    return jsonify(success=True)
+    return '', 204
 
 
 @app.route('/tags')
