@@ -56,6 +56,10 @@ def insert_and_associate_tags(conn, cur, link_id, tags):
         # Insert a join record for this tag/link
         cur.execute('INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)', [dbtags[tag], link_id])
 
+    conn.commit()
+    # Clean up orphaned tags (not associated with any link)
+    cur.execute('DELETE FROM tags t WHERE NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)', [link_id])
+
 
 # Set up application
 app = Flask(__name__)
