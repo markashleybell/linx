@@ -1,55 +1,61 @@
 // This callback function is called when the content script has been 
 // injected and returned its results
 function onPageInfo(o)  { 
-    document.getElementById("title").value = o.title; 
-    document.getElementById("url").value = o.url; 
-    document.getElementById("abstract").innerText = o.abstract; 
+    document.getElementById('title').value = o.title; 
+    document.getElementById('url').value = o.url; 
+    document.getElementById('abstract').innerText = o.abstract; 
 } 
 
 // POST the data to the server using XMLHttpRequest
-function addBookmark() {
+function addBookmark(event) {
+
+    // Cancel the form submit
+    event.preventDefault();
+
+    // Get the REST endpoint URL from the extension config
     var postUrl = localStorage['post_url'];
     if (!postUrl) {
         alert('POST Url is not set');
         return;
     }
 
+    // Build up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
+    xhr.open('POST', postUrl, true);
 
-    // This async request used to work, but now doesn't for some reason...
-    // It works if you 'Inspect popup' and step through the code in the Chrome debugger,
-    // but as soon as you close the debugger and try the same thing, the call fails?!??
-
-    // xhr.onreadystatechange = function() { 
-    //     // If the request completed, close the extension popup
-    //     if (this.readyState == 4) {
-    //         if (this.status == 200) 
-    //             window.close();
-    //     }
-    // };
-
-    // xhr.open("POST", postUrl, true);
-
-    // Non-asynchronous request works fine
-    xhr.open("POST", postUrl, false);
+    // URLEncode each field's contents
+    var params = 'link_id=0' + 
+                 '&title=' + encodeURIComponent(document.getElementById('title').value) + 
+                 '&url=' + encodeURIComponent(document.getElementById('url').value) + 
+                 '&abstract=' + encodeURIComponent(document.getElementById('abstract').value) +
+                 '&tags=' + encodeURIComponent(document.getElementById('tags').value);
     
-    var params = "link_id=0" + 
-                 "&title=" + document.getElementById("title").value + 
-                 "&url=" + document.getElementById("url").value + 
-                 "&abstract=" + document.getElementById("abstract").value +
-                 "&tags=" + document.getElementById("tags").value + 
-                 "&xhr=1";
+    // Replace any instances of the URLEncoded space char with +
+    params = params.replace(/%20/g, '+');
+
+    // Set correct headers
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('Content-Length', params.length);
+    xhr.setRequestHeader('Connection', 'close');
     
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    // Handle request state change events
+    xhr.onreadystatechange = function() { 
+        // If the request completed
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200) // If it was a success, close the popup 
+                window.close();
+            else // Show what went wrong
+                alert('Error saving: ' + xhr.statusText);
+        }
+    };
+
+    // Send the request
     xhr.send(params);
 
-    window.close();
-
-    return false;
 }
 
 // When the popup HTML has loaded
-window.addEventListener("load", function(evt) {
+window.addEventListener('load', function(evt) {
     // Handle the bookmark form submit event with our addBookmark function
     document.getElementById('addbookmark').addEventListener('submit', addBookmark);
     // Call the getPageInfo function in the background page, injecting content_script.js 
