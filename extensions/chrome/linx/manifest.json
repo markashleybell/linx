@@ -15,8 +15,6 @@
     "permissions": [
         "tabs", 
         "http://*/", 
-        "https://*/",
-        "http://localhost:5000/",
-        "http://markb.webfactional.com/"
+        "https://*/"
     ]
 }
