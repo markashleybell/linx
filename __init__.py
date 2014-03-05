@@ -63,7 +63,8 @@ app = Flask(__name__)
 app.config.from_pyfile('config.cfg')
 # Set up - connection pool
 connection_pool = ThreadedConnectionPool(1, 20, app.config['CONNECTION_STRING'])
-
+# Get tag search type from config
+tag_search_method = app.config['TAG_SEARCH_METHOD']
 
 # Normal (non-query) SQL
 list_sql = """
@@ -204,9 +205,9 @@ def tags():
         cur.execute('SELECT id, tag FROM tags')
         tags = cur.fetchall()
 
-    # Return each tag with a list of its unique substrings, 
-    # to allow partial string matching with Bloodhound
-    tags_processed = list([{'tag': t['tag'],'tokens': list(unique_substrings(t['tag']))} for t in tags])
+    # If search type B, return each tag with a list of its unique substrings
+    # as tokens, to allow partial string matching with Bloodhound
+    tags_processed = list([{'tag': t['tag'],'tokens': list(unique_substrings(t['tag'])) if tag_search_method == 'B' else [t['tag']]} for t in tags])
 
     return jsonify(tags=tags_processed)
 
