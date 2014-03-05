@@ -6,6 +6,8 @@ function onPageInfo(o)  {
     document.getElementById('abstract').innerText = o.abstract; 
 } 
 
+var result = null;
+
 // POST the data to the server using XMLHttpRequest
 function addBookmark(event) {
 
@@ -33,19 +35,25 @@ function addBookmark(event) {
     // Replace any instances of the URLEncoded space char with +
     params = params.replace(/%20/g, '+');
 
-    // Set correct headers
+    // Set correct header for form data
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.setRequestHeader('Content-Length', params.length);
-    xhr.setRequestHeader('Connection', 'close');
     
     // Handle request state change events
     xhr.onreadystatechange = function() { 
         // If the request completed
         if (xhr.readyState == 4) {
-            if (xhr.status == 200) // If it was a success, close the popup 
-                window.close();
-            else // Show what went wrong
-                alert('Error saving: ' + xhr.statusText);
+            result.removeClass('label-success label-danger');
+            result.hide();
+            if (xhr.status == 200) {
+                // If it was a success, close the popup after a short delay
+                result.html('Saved!');
+                result.addClass('label-success');
+                window.setTimeout(window.close, 1000);
+            } else {// Show what went wrong
+                result.html('Error saving: ' + xhr.statusText);
+                result.addClass('label-danger');
+            }
+            result.show();
         }
     };
 
@@ -56,6 +64,9 @@ function addBookmark(event) {
 
 // When the popup HTML has loaded
 window.addEventListener('load', function(evt) {
+
+    result = $('#result');
+
     // Handle the bookmark form submit event with our addBookmark function
     document.getElementById('addbookmark').addEventListener('submit', addBookmark);
     // Call the getPageInfo function in the background page, injecting content_script.js 
