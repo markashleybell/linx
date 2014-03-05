@@ -60,6 +60,8 @@ def insert_and_associate_tags(conn, cur, link_id, tags):
     # Clean up orphaned tags (not associated with any link)
     cur.execute('DELETE FROM tags t WHERE NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)', [link_id])
 
+def process_tag_data_string(data_string):
+    return [tag.lower().strip() for tag in data_string.split('|')]
 
 # Set up application
 app = Flask(__name__)
@@ -153,7 +155,7 @@ def link_create():
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
-    tags = [tag.strip() for tag in request.form['tags'].split('|')]
+    tags = process_tag_data_string(request.form['tags'])
 
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -181,7 +183,7 @@ def link_update(id):
     title = request.form['title']
     url = request.form['url']
     abstract = request.form['abstract']
-    tags = [tag.strip() for tag in request.form['tags'].split('|')]
+    tags = process_tag_data_string(request.form['tags'])
 
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -234,7 +236,7 @@ def manage_tags_update():
         # ID of the tag we are going to merge all the others with
         target_id = int(request.form['target'])
         # All tags which will be merged with the target
-        merge_tags = [tag.strip() for tag in request.form['tags'].split('|')]
+        merge_tags = process_tag_data_string(request.form['tags'])
         cur.execute('SELECT id, tag FROM tags WHERE tag IN %s', [tuple(merge_tags)])
         # Get all the IDs for the tags to be merged into our target tag
         ids = [t['id'] for t in cur.fetchall()]
