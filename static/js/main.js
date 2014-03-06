@@ -63,4 +63,9 @@ $(function(){
         }
     });
 
+    $('#header-search').on('submit', function(e) {
+        if($('#q').val() === '')
+            e.preventDefault();
+    });
+
 });
