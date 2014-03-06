@@ -36,6 +36,11 @@ def unique_substrings(s):
                 yield result
 
 
+def delete_orphaned_tags(conn, cur):
+    """Clean up orphaned tags (not associated with any link)"""
+    cur.execute('DELETE FROM tags t WHERE NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)')
+
+
 def insert_and_associate_tags(conn, cur, link_id, tags):
     """Given a list of tags and a link ID, insert any tags which don't already
     exist in the database, then associate this link with all the tags"""
@@ -57,11 +62,12 @@ def insert_and_associate_tags(conn, cur, link_id, tags):
         cur.execute('INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)', [dbtags[tag], link_id])
 
     conn.commit()
-    # Clean up orphaned tags (not associated with any link)
-    cur.execute('DELETE FROM tags t WHERE NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)', [link_id])
+    delete_orphaned_tags(conn, cur)
+
 
 def process_tag_data_string(data_string):
     return [tag.lower().strip() for tag in data_string.split('|')]
+
 
 # Set up application
 app = Flask(__name__)
@@ -199,7 +205,8 @@ def link_delete(id):
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute('DELETE FROM tags_links WHERE link_id = %s', [id])
         cur.execute('DELETE FROM links WHERE id = %s', [id])
-    
+        delete_orphaned_tags(conn, cur)
+
     return '', 204
 
 
