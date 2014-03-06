@@ -104,11 +104,12 @@ window.addEventListener('load', function(evt) {
         allowDuplicates: false,
         typeahead: true,
         typeaheadOptions: {
-                        highlight: true
+            highlight: true
         },
         typeaheadDatasetOptions: {
             displayKey: 'tag',
             source: tags.ttAdapter()
         }
     });
+    
 });
