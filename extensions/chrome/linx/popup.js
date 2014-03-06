@@ -42,8 +42,7 @@ function addBookmark(event) {
     xhr.onreadystatechange = function() { 
         // If the request completed
         if (xhr.readyState == 4) {
-            result.removeClass('label-success label-danger');
-            result.hide();
+            result.removeClass('label-default label-success label-danger');
             if (xhr.status == 200) {
                 // If it was a success, close the popup after a short delay
                 result.html('Saved!');
@@ -53,12 +52,16 @@ function addBookmark(event) {
                 result.html('Error saving: ' + xhr.statusText);
                 result.addClass('label-danger');
             }
-            result.show();
         }
     };
 
     // Send the request
     xhr.send(params);
+
+    result.html('Saving...');
+    result.removeClass('label-default label-success label-danger');
+    result.addClass('label-default');
+    result.show();
 
 }
 
