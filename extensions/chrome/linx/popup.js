@@ -43,11 +43,19 @@ function addBookmark(event) {
         // If the request completed
         if (xhr.readyState == 4) {
             result.removeClass('label-default label-success label-danger');
+            // If the request was successful
             if (xhr.status == 200) {
-                // If it was a success, close the popup after a short delay
-                result.html('Saved!');
-                result.addClass('label-success');
-                window.setTimeout(window.close, 1000);
+                var json = JSON.parse(xhr.responseText);
+                // If an error message was returned, show it
+                if(typeof json.error !== 'undefined') {
+                    result.html(json.error);
+                    result.addClass('label-danger');  
+                } else { // If the data was successfully saved
+                    result.html('Saved!');
+                    result.addClass('label-success');
+                    // Close the popup after a short delay
+                    window.setTimeout(window.close, 1000);
+                }
             } else {// Show what went wrong
                 result.html('Error saving: ' + xhr.statusText);
                 result.addClass('label-danger');

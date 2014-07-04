@@ -165,6 +165,15 @@ def link_create():
 
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        # Check if a record with the same URL already exists in the database
+        cur.execute('SELECT COUNT(id) AS count FROM links WHERE url = %s', [url]) 
+        exists = int(cur.fetchone()['count'])
+        # If there is, return an error message
+        if exists is not 0:
+            return jsonify({'error': 'This url has already been bookmarked.'})
+
+        # Otherwise, just save the details
         cur.execute('INSERT INTO links (title, url, abstract) VALUES (%s, %s, %s) RETURNING id', [title, url, abstract])
         id = cur.fetchone()['id']
         insert_and_associate_tags(conn, cur, id, tags)
