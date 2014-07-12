@@ -4,3 +4,5 @@ CONNECTION_STRING = """host='localhost' dbname='db_name' user='db_user' password
 PAGE_SIZE = 20
 # A = StartsWith, B = SubString
 TAG_SEARCH_METHOD = 'A'
+# Secret key
+SECRET_KEY = 'XXXXXXXX'
