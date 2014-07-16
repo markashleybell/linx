@@ -200,7 +200,7 @@ def do_login():
         userdetails = cur.fetchone()
     
     if userdetails is not None and sha512_crypt.verify(password, userdetails['password']):
-        login_user(User(userdetails['id']))
+        login_user(User(userdetails['id']), remember=True)
         return redirect(next)
 
     return render_template('login.html', next=next, username=username)
