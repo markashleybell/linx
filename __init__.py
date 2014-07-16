@@ -42,7 +42,7 @@ def unique_substrings(s):
 
 def delete_orphaned_tags(conn, cur):
     """Clean up orphaned tags (not associated with any link)"""
-    cur.execute('DELETE FROM tags t WHERE NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)')
+    cur.execute('DELETE FROM tags t WHERE t.user_id = %s AND NOT EXISTS (SELECT * FROM tags_links tl WHERE tl.tag_id = t.id)', [current_user.id])
 
 
 def insert_and_associate_tags(conn, cur, link_id, tags):
@@ -218,7 +218,7 @@ def link_list():
     links = None
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute('SELECT id, title, url, abstract, tags FROM links WHERE user_id', [current_user.id])
+        cur.execute('SELECT id, title, url, abstract, tags FROM links WHERE user_id = %s', [current_user.id])
         links = cur.fetchall()
 
     return jsonify(links=[{'id': l['id'], 'title': l['title'], 'url': l['url'], 'abstract': l['abstract'], 'tags': l['tags'].split('|')} for l in links])
@@ -258,7 +258,7 @@ def link_retrieve(id=0):
     link = None
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute('SELECT id, title, url, abstract, tags FROM links WHERE id = %s', [id])
+        cur.execute('SELECT id, title, url, abstract, tags FROM links WHERE id = %s AND user_id = %s', [id, current_user.id])
         link = cur.fetchone()
 
     return render_template('link.html', link=link)    
@@ -274,7 +274,7 @@ def link_update(id):
 
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute('UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s', [title, url, abstract, id])
+        cur.execute('UPDATE links SET title = %s, url = %s, abstract = %s WHERE id = %s AND user_id = %s', [title, url, abstract, id, current_user.id])
         insert_and_associate_tags(conn, cur, id, tags)
 
     return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
@@ -285,9 +285,13 @@ def link_update(id):
 def link_delete(id):
     with get_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute('DELETE FROM tags_links WHERE link_id = %s', [id])
-        cur.execute('DELETE FROM links WHERE id = %s', [id])
-        delete_orphaned_tags(conn, cur)
+        # Check that the current user owns the link we're going to delete
+        cur.execute('SELECT COUNT(id) AS count FROM links WHERE id = %s AND user_id = %s', [id, current_user.id]) 
+        exists = int(cur.fetchone()['count'])
+        if exists is not 0:
+            cur.execute('DELETE FROM tags_links WHERE link_id = %s', [id])
+            cur.execute('DELETE FROM links WHERE id = %s AND user_id = %s', [id, current_user.id])
+            delete_orphaned_tags(conn, cur)
 
     return '', 204
 
@@ -329,11 +333,13 @@ def manage_tags_update():
         target_id = int(request.form['target'])
         # All tags which will be merged with the target
         merge_tags = process_tag_data_string(request.form['tags'])
+        # Make sure we only get tags for the current user
         cur.execute('SELECT id, tag FROM tags WHERE user_id = %s AND tag IN %s', [current_user.id, tuple(merge_tags)])
         # Get all the IDs for the tags to be merged into our target tag
         ids = [t['id'] for t in cur.fetchall()]
         # For each tag we merge, update all existing references to 
         # its ID to the ID of the target, then delete the merged tag
+        # Updates and deletes are safe because we're only enumerating tag IDs for this user
         for id in ids:
             cur.execute('UPDATE tags_links SET tag_id = %s WHERE tag_id = %s AND NOT EXISTS (SELECT link_id FROM tags_links tl WHERE tl.tag_id = %s AND tl.link_id = tags_links.link_id)', [target_id, id, target_id])
             cur.execute('DELETE FROM tags_links WHERE tag_id = %s', [id])
