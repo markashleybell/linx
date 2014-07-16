@@ -1,11 +1,13 @@
-import os
+import os, sys
 from passlib.hash import sha512_crypt
 
-hash = sha512_crypt.encrypt('test123')
+args = sys.argv
+
+hash = sha512_crypt.encrypt(args[1])
 
 print hash
 
-ok = sha512_crypt.verify('test123', hash)
+ok = sha512_crypt.verify(args[1], hash)
 
 print ok
 
