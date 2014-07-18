@@ -73,6 +73,28 @@ def process_tag_data_string(data_string):
     return [tag.lower().strip() for tag in data_string.split('|')]
 
 
+# public static List<string> GetPaginationRange(int totalPages, int range, int currentPage)
+# {
+#     var minPage = Math.Max(1, (currentPage - range));
+#     var maxPage = Math.Min(totalPages, (currentPage + range));
+
+#     var output = new List<string>();
+
+#     if (minPage != 1)
+#         output.AddRange(new string[] { "1", "..." });
+
+#     for (int i = minPage; i <= maxPage; i++)
+#         output.Add(i.ToString());
+
+#     if (maxPage != totalPages)
+#         output.AddRange(new string[] { "...", totalPages.ToString() });
+
+#     return output;
+# }
+
+def get_pagination_range(totalPages, range, currentPage):
+    return '';
+
 # Set up application
 app = Flask(__name__)
 # Load configuration
