@@ -73,28 +73,6 @@ def process_tag_data_string(data_string):
     return [tag.lower().strip() for tag in data_string.split('|')]
 
 
-# public static List<string> GetPaginationRange(int totalPages, int range, int currentPage)
-# {
-#     var minPage = Math.Max(1, (currentPage - range));
-#     var maxPage = Math.Min(totalPages, (currentPage + range));
-
-#     var output = new List<string>();
-
-#     if (minPage != 1)
-#         output.AddRange(new string[] { "1", "..." });
-
-#     for (int i = minPage; i <= maxPage; i++)
-#         output.Add(i.ToString());
-
-#     if (maxPage != totalPages)
-#         output.AddRange(new string[] { "...", totalPages.ToString() });
-
-#     return output;
-# }
-
-def get_pagination_range(totalPages, range, currentPage):
-    return '';
-
 # Set up application
 app = Flask(__name__)
 # Load configuration
@@ -106,6 +84,26 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in.'
+
+
+@app.context_processor
+def view_helpers():
+    def get_pagination_range(total_pages, size, current_page):
+        minpage = max(1, (current_page - size))
+        maxpage = min(total_pages, (current_page + size))
+
+        output = []
+
+        if minpage != 1:
+            output.extend(['1', '...'])
+
+        output.extend([str(i) for i in range(minpage, maxpage + 1)])
+
+        if maxpage != total_pages:
+            output.extend(['...', str(total_pages)])
+
+        return output
+    return dict(get_pagination_range=get_pagination_range)
 
 
 class User(UserMixin):

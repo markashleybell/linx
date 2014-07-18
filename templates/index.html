@@ -12,11 +12,11 @@
 
 <ul class="pagination">
     <li{% if paging.page == 1 %} class="disabled"{% endif %}><a href="/{{ paging.page - 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&laquo;</a></li>  
-{% for i in range(1, paging.pages + 1) %}
+{% for i in get_pagination_range(paging.pages, 4, paging.page) %}
     {% if i == paging.page %}
     <li class="active"><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }} <span class="sr-only">(current)</span></a></li>
     {% else %}
-    <li><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
+    <li{% if i == '...' %} class="disabled"{% endif %}><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
     {% endif %}
 {% endfor %}
     <li{% if paging.page == paging.pages %} class="disabled"{% endif %}><a href="/{{ paging.page + 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&raquo;</a></li>
