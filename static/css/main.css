@@ -1,15 +1,18 @@
 .label-clickable {
-    text-decoration: none;
-    cursor: pointer; }
-    .label-clickable:hover {
-        color: #FFF581;
-        text-decoration: none; }
+  text-decoration: none;
+  cursor: pointer; }
+  .label-clickable:hover {
+    color: #FFF581;
+    text-decoration: none; }
 
 .link-title {
-    display: block; }
-    .link-title .edit-link {
-        font-size: 0.8em;
-        padding-left: 15px;
-        display: none; }
-    .link-title:hover .edit-link {
-        display: inline; }
+  display: block; }
+  .link-title .edit-link {
+    font-size: 0.8em;
+    padding-left: 15px;
+    display: none; }
+  .link-title:hover .edit-link {
+    display: inline; }
+
+#results {
+  padding-bottom: 60px; }
