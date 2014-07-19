@@ -1,9 +1,9 @@
 // This callback function is called when the content script has been 
 // injected and returned its results
-function onPageInfo(o)  { 
-    document.getElementById('title').value = o.title; 
-    document.getElementById('url').value = o.url; 
-    document.getElementById('abstract').innerText = o.abstract; 
+function onPageDetailsReceived(pageDetails)  { 
+    document.getElementById('title').value = pageDetails.title; 
+    document.getElementById('url').value = pageDetails.url; 
+    document.getElementById('abstract').innerText = pageDetails.abstract; 
 } 
 
 var result = null;
@@ -80,9 +80,13 @@ window.addEventListener('load', function(evt) {
 
     // Handle the bookmark form submit event with our addBookmark function
     document.getElementById('addbookmark').addEventListener('submit', addBookmark);
-    // Call the getPageInfo function in the background page, injecting content_script.js 
-    // into the current HTML page and passing in our onPageInfo function as the callback
-    chrome.extension.getBackgroundPage().getPageInfo(onPageInfo);
+    
+    // Get the event page
+    chrome.runtime.getBackgroundPage(function(eventPage) {
+        // Call the getPageInfo function in the event page, passing in our onPageDetailsReceived 
+        // function as the callback. This injects content.js into the current tab's HTML
+        eventPage.getPageDetails(onPageDetailsReceived);
+    });
 
     var tagJsonUrl = localStorage['tag_json_url'];
     if (!tagJsonUrl) {

@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Linx",
     "description": "Save a bookmark to Linx.",
-    "version": "0.3",
+    "version": "0.4",
     "options_page": "options.html",
     "background": {
         "scripts": ["event.js"],
@@ -14,7 +14,7 @@
     },
     "permissions": [
         "tabs", 
-        "http://*/", 
-        "https://*/"
+        "http://*/*", 
+        "https://*/*"
     ]
 }
