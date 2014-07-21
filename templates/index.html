@@ -13,7 +13,7 @@
 <ul class="pagination">
     <li{% if paging.page == 1 %} class="disabled"{% endif %}><a href="/{{ paging.page - 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&laquo;</a></li>  
 {% for i in get_pagination_range(paging.pages, 4, paging.page) %}
-    {% if i == paging.page %}
+    {% if i == paging.page|string %}
     <li class="active"><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }} <span class="sr-only">(current)</span></a></li>
     {% else %}
     <li{% if i == '...' %} class="disabled"{% endif %}><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
