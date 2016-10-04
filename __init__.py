@@ -46,12 +46,11 @@ def insert_and_associate_tags(conn, cur, link_id, tags):
     for tag in tags:
         # If a tag isn't already in the db
         if tag not in dbtags:
-            cur.execute('INSERT INTO tags (tag, user_id) VALUES (%s, %s) RETURNING id', (tag, current_user.id))
+            cur.execute('INSERT INTO tags (tag, user_id) VALUES (%s, %s); SELECT CAST(SCOPE_IDENTITY() AS INT) AS id;', (tag, current_user.id))
             # Add the new tag and id to the dbtags dict so we don't have to query for it again
             dbtags[tag] = cur.fetchone()['id']
         # Insert a join record for this tag/link
         cur.execute('INSERT INTO tags_links (tag_id, link_id) VALUES (%s, %s)', (dbtags[tag], link_id))
-
     conn.commit()
     delete_orphaned_tags(conn, cur)
 
@@ -124,7 +123,7 @@ list_sql = """
 # Tag query SQL
 query_sql = """
             SELECT
-                l1.*
+                l1.id, l1.title, l1.url, l1.abstract, l1.tags
             FROM
                 links l1, tags_links m1, tags t1
             WHERE
@@ -136,7 +135,7 @@ query_sql = """
             AND
                 l1.id = m1.link_id
             GROUP BY
-                l1.id
+                l1.id, l1.title, l1.url, l1.abstract, l1.tags
             HAVING
                 COUNT(l1.id) = %s
             """
@@ -248,7 +247,7 @@ def link_create():
 
 
         # Otherwise, just save the details
-        cur.execute('INSERT INTO links (title, url, abstract, user_id) VALUES (%s, %s, %s, %s) RETURNING id', (title, url, abstract, current_user.id))
+        cur.execute('INSERT INTO links (title, url, abstract, user_id) VALUES (%s, %s, %s, %s); SELECT CAST(SCOPE_IDENTITY() AS INT) AS id;', (title, url, abstract, current_user.id))
         id = cur.fetchone()['id']
         insert_and_associate_tags(conn, cur, id, tags)
 
@@ -295,6 +294,7 @@ def link_delete(id):
         if exists is not 0:
             cur.execute('DELETE FROM tags_links WHERE link_id = %s', (id))
             cur.execute('DELETE FROM links WHERE id = %s AND user_id = %s', (id, current_user.id))
+            conn.commit()
             delete_orphaned_tags(conn, cur)
 
     return '', 204
@@ -348,6 +348,7 @@ def manage_tags_update():
             cur.execute('UPDATE tags_links SET tag_id = %s WHERE tag_id = %s AND NOT EXISTS (SELECT link_id FROM tags_links tl WHERE tl.tag_id = %s AND tl.link_id = tags_links.link_id)', (target_id, id, target_id))
             cur.execute('DELETE FROM tags_links WHERE tag_id = %s', (id))
             cur.execute('DELETE FROM tags WHERE id = %s', (id))
+            conn.commit()
 
     return redirect(url_for('manage_tags'))
 
