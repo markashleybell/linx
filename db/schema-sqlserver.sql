@@ -1,3 +1,19 @@
+USE master
+GO
+
+IF EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'linx')
+BEGIN
+	DECLARE @kill varchar(8000) = '';
+	SELECT @kill = @kill + 'kill ' + CONVERT(varchar(5), spid) + ';'
+	FROM master..sysprocesses 
+	WHERE dbid = db_id('linx')
+
+	EXEC(@kill)
+
+	DROP DATABASE linx
+END
+GO
+
 CREATE DATABASE linx
 GO
 
