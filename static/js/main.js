@@ -58,7 +58,7 @@ $(function(){
                 url: $form.attr('action'),
                 type: 'DELETE'
             }).done(function(data, status, req) {
-                window.location = '/';
+                window.location = _URL_PREFIX;
             }).fail(function(req, status, error) {
                 alert('Couldn\'t delete link: ' + error);
             });
