@@ -71,13 +71,6 @@ app = Flask(__name__)
 app.config.from_pyfile('config.cfg')
 app.secret_key = app.config['SECRET_KEY']
 
-@app.before_request
-def before_request():
-    if request.url.startswith('http://'):
-        url = request.url.replace('http://', 'https://', 1)
-        code = 301
-        return redirect(url, code=code)
-        
 
 # Set up login manager
 login_manager = LoginManager()
