@@ -1,4 +1,9 @@
+import os
 import pymssql
+
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 from flask import Flask, render_template, request, send_from_directory, \
      redirect, url_for, jsonify, flash
@@ -359,4 +364,7 @@ def static_from_root():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.listen(os.environ['HTTP_PLATFORM_PORT'])
+    loop = IOLoop.instance()
+    loop.start()
