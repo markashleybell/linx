@@ -11,15 +11,15 @@
 {% set query = '|'.join(query_terms) if query_terms else None %}
 
 <ul class="pagination">
-    <li{% if paging.page == 1 %} class="disabled"{% endif %}><a href="/{{ paging.page - 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&laquo;</a></li>  
+    <li{% if paging.page == 1 %} class="disabled"{% endif %}><a href="{{ url_for('.index') }}{{ paging.page - 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&laquo;</a></li>  
 {% for i in get_pagination_range(paging.pages, 4, paging.page) %}
     {% if i == paging.page|string %}
-    <li class="active"><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }} <span class="sr-only">(current)</span></a></li>
+    <li class="active"><a href="{{ url_for('.index') }}{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }} <span class="sr-only">(current)</span></a></li>
     {% else %}
-    <li{% if i == '...' %} class="disabled"{% endif %}><a href="/{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
+    <li{% if i == '...' %} class="disabled"{% endif %}><a href="{{ url_for('.index') }}{{ i }}{% if query %}?q={{ query | urlencode }}{% endif %}">{{ i }}</a></li>
     {% endif %}
 {% endfor %}
-    <li{% if paging.page == paging.pages %} class="disabled"{% endif %}><a href="/{{ paging.page + 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&raquo;</a></li>
+    <li{% if paging.page == paging.pages %} class="disabled"{% endif %}><a href="{{ url_for('.index') }}{{ paging.page + 1 }}{% if query %}?q={{ query | urlencode }}{% endif %}">&raquo;</a></li>
 </ul>
 
 <div id="results">
@@ -27,11 +27,11 @@
 {% for result in results %}
 
 <p>
-    <span class="link-title"><a href="{{ result.url }}" rel="external">{{ result.title }}</a> <a class="edit-link" href="/links/{{ result.id }}">Edit</a></span>
+    <span class="link-title"><a href="{{ result.url }}" rel="external">{{ result.title }}</a> <a class="edit-link" href="{{ url_for('.link_retrieve', id=result.id) }}">Edit</a></span>
     {{ result.abstract }}<br />
     {% if result.tags %}
     {% for tag in result.tags.split('|') %}
-    <a href="/?q={{ tag }}" class="label label-default label-clickable">{{ tag }}</a>
+    <a href="{{ url_for('.index') }}?q={{ tag }}" class="label label-default label-clickable">{{ tag }}</a>
     {% endfor %}
     {% endif %}
 </p>

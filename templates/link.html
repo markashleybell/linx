@@ -2,7 +2,7 @@
 
 {% block body %}
 
-<form action="/links{{ '/%s' % link.id if link.id }}" method="post" role="form" id="update-form">
+<form action="{{ url_for('.link_update', id=link.id) if link.id else url_for('.link_create') }}" method="post" role="form" id="update-form">
     <div class="form-group">
         <label for="title">Title</label>
         <input type="text" class="form-control" name="title" id="title" placeholder="Enter title" value="{{ link.title }}">
@@ -28,7 +28,7 @@
 
 {% if link.id %}
 
-<form action="/links/{{ link.id }}" method="get" role="form" id="delete-form">
+<form action="{{ url_for('.link_retrieve', id=link.id) }}" method="get" role="form" id="delete-form">
     <div class="form-group">
         <button type="submit" class="btn btn-default">Delete</button>
     </div>

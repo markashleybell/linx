@@ -3,10 +3,10 @@
     <head>
         <title>Linx</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
-        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/mab-jquery-taginput.css') }}" />
-        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static', filename='css/main.css') }}" />
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('.static', filename='favicon.ico') }}">
+        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('.static', filename='css/bootstrap.min.css') }}" />
+        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('.static', filename='css/mab-jquery-taginput.css') }}" />
+        <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('.static', filename='css/main.css') }}" />
     </head>
     <body>
         <div class="container">
@@ -19,7 +19,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="/">Linx</a>
+                    <a class="navbar-brand" href="{{ url_for('.index') }}">Linx</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
@@ -27,14 +27,14 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li><a href="#" onclick="alert('Not Implemented Yet!'); return false;">Link Tools</a></li>
-                                <li><a href="/manage-tags">Manage Tags</a></li>
+                                <li><a href="{{ url_for('.manage_tags') }}">Manage Tags</a></li>
                                 <li class="divider"></li>
                                 <li><a href="#" onclick="alert('Not Implemented Yet!'); return false;">Settings</a></li>
-                                <li><a href="/logout">Log Out</a></li>
+                                <li><a href="{{ url_for('.logout') }}">Log Out</a></li>
                             </ul>
                         </li>
                     </ul>
-                    <form class="navbar-form navbar-right" id="header-search" role="form" action="/">
+                    <form class="navbar-form navbar-right" id="header-search" role="form" action="{{ url_for('.index') }}">
                         <div class="form-group">
                             <input type="text" placeholder="Enter tags..." id="q" name="q" class="form-control" value="{% block query %}{% endblock %}">
                         </div>
@@ -45,10 +45,10 @@
             {% block body %}{% endblock %}
         </div> <!-- /container -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/mab-jquery-taginput.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('.static', filename='js/bootstrap.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('.static', filename='js/typeahead.bundle.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('.static', filename='js/mab-jquery-taginput.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('.static', filename='js/main.js') }}"></script>
         {% block script %}{% endblock %}
         <script id="update-link-template" type="text/x-handlebars-template"></script>
     </body>

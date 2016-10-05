@@ -1,3 +1,5 @@
+var _URL_PREFIX = '/linx';
+
 // Instantiate the Bloodhound suggestion engine
 var tags = new Bloodhound({
     // Each tag item returned by the /tags endpoint has a tokens property
@@ -42,7 +44,7 @@ $(function(){
             data: $form.serialize(),
             type: 'POST'
         }).done(function(data, status, req) {
-            window.location = '/';
+            window.location = _URL_PREFIX;
         }).fail(function(req, status, error) {
             alert('Couldn\'t update link: ' + error);
         });

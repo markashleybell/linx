@@ -5,7 +5,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
-from flask import Flask, render_template, request, send_from_directory, \
+from flask import Flask, Blueprint, render_template, request, send_from_directory, \
      redirect, url_for, jsonify, flash
 from flask.ext.login import LoginManager, current_user, login_required, \
      login_user, logout_user, UserMixin, confirm_login, fresh_login_required
@@ -66,6 +66,7 @@ def process_tag_data_string(data_string):
 
 # Set up application
 app = Flask(__name__)
+
 # Load configuration
 app.config.from_pyfile('config.cfg')
 app.secret_key = app.config['SECRET_KEY']
@@ -73,7 +74,7 @@ app.secret_key = app.config['SECRET_KEY']
 # Set up login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = '.login'
 login_manager.login_message = 'Please log in.'
 
 
@@ -146,8 +147,12 @@ query_sql = """
             """
 
 
-@app.route('/')
-@app.route('/<int:page>')
+# Entire app is run under a blueprint to allow sub-folder deployment
+linx = Blueprint('linx', __name__, template_folder='templates', static_folder='static')
+
+
+@linx.route('/')
+@linx.route('/<int:page>')
 @login_required
 def index(page=1):
     # Paging variables
@@ -190,12 +195,12 @@ def index(page=1):
     return render_template('index.html', results=results, query_terms=query_terms, paging=paging)
 
 
-@app.route('/login', methods=['GET'])
+@linx.route('/login', methods=['GET'])
 def login():
     return render_template('login.html', next=request.args['next'])
 
 
-@app.route('/login', methods=['POST'])
+@linx.route('/login', methods=['POST'])
 def do_login():
     username = request.form['username']
     password = request.form['password']
@@ -214,13 +219,13 @@ def do_login():
     return render_template('login.html', next=next, username=username)
 
 
-@app.route('/logout', methods=['GET'])
+@linx.route('/logout', methods=['GET'])
 def logout():
     logout_user();
-    return redirect('/')
+    return redirect(url_for('.index'))
 
 
-@app.route('/links', methods=['GET'])
+@linx.route('/links', methods=['GET'])
 @login_required
 def link_list():
     links = None
@@ -232,7 +237,7 @@ def link_list():
     return jsonify(links=[{'id': l['id'], 'title': l['title'], 'url': l['url'], 'abstract': l['abstract'], 'tags': l['tags'].split('|')} for l in links])
 
 
-@app.route('/links', methods=['POST'])
+@linx.route('/links', methods=['POST'])
 @login_required
 def link_create():
     title = request.form['title']
@@ -259,8 +264,8 @@ def link_create():
     return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
-@app.route('/links/new', methods=['GET'])
-@app.route('/links/<int:id>', methods=['GET'])
+@linx.route('/links/new', methods=['GET'])
+@linx.route('/links/<int:id>', methods=['GET'])
 @login_required
 def link_retrieve(id=0):
     link = None
@@ -272,7 +277,7 @@ def link_retrieve(id=0):
     return render_template('link.html', link=link)    
 
 
-@app.route('/links/<int:id>', methods=['POST'])
+@linx.route('/links/<int:id>', methods=['POST'])
 @login_required
 def link_update(id):
     title = request.form['title']
@@ -288,7 +293,7 @@ def link_update(id):
     return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
-@app.route('/links/<int:id>', methods=['DELETE'])
+@linx.route('/links/<int:id>', methods=['DELETE'])
 @login_required
 def link_delete(id):
     with get_connection() as conn:
@@ -305,7 +310,7 @@ def link_delete(id):
     return '', 204
 
 
-@app.route('/tags')
+@linx.route('/tags')
 @login_required
 def tags():
     with get_connection() as conn:
@@ -321,7 +326,7 @@ def tags():
     return jsonify(tags=tags_processed)
 
 
-@app.route('/manage-tags')
+@linx.route('/manage-tags')
 @login_required
 def manage_tags():
     with get_connection() as conn:
@@ -333,7 +338,7 @@ def manage_tags():
     return render_template('manage_tags.html', tags=tags)
 
 
-@app.route('/manage-tags-update', methods=['POST'])
+@linx.route('/manage-tags-update', methods=['POST'])
 @login_required
 def manage_tags_update():
     with get_connection() as conn:
@@ -358,12 +363,16 @@ def manage_tags_update():
     return redirect(url_for('manage_tags'))
 
 
-@app.route('/robots.txt')
+@linx.route('/robots.txt')
 def static_from_root():
-    return send_from_directory(app.static_folder, request.path[1:])
+    return send_from_directory(linx.static_folder, request.path[1:])
+
+
+app.register_blueprint(linx, url_prefix='/linx')
 
 
 if __name__ == '__main__':
+    # app.run(debug=True, threaded=True)
     http_server = HTTPServer(WSGIContainer(app))
     http_server.listen(os.environ['HTTP_PLATFORM_PORT'])
     loop = IOLoop.instance()
