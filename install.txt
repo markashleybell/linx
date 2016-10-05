@@ -1,0 +1,12 @@
+Make sure SQL 2016 has TCP/IP protocol enabled under Configuration Manager
+
+Start virtualenv
+
+Set the following environment vars
+
+SET VS90COMNTOOLS=%VS140COMNTOOLS%
+SET PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=1
+
+pip install pymssql 
+
+or pip install -r requirements.txt

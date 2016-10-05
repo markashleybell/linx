@@ -1,5 +1,6 @@
-# Main DB connection string
-CONNECTION_STRING = """host='localhost' dbname='db_name' user='db_user' password='db_password'"""
+# Main DB connection
+DB_SERVER = 'localhost:1433'
+DB_NAME = 'linx'
 # Number of links to show per page
 PAGE_SIZE = 20
 # A = StartsWith, B = SubString
