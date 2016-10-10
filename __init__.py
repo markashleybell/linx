@@ -149,13 +149,8 @@ query_sql = """
                 COUNT(l1.id) = %s
             """
 
-
-# Entire app is run under a blueprint to allow sub-folder deployment
-linx = Blueprint('linx', __name__, template_folder='templates', static_folder='static')
-
-
-@linx.route('/')
-@linx.route('/<int:page>')
+@app.route('/linx')
+@app.route('/linx/<int:page>')
 @login_required
 def index(page=1):
     # Paging variables
@@ -198,12 +193,12 @@ def index(page=1):
     return render_template('index.html', results=results, query_terms=query_terms, paging=paging)
 
 
-@linx.route('/login', methods=['GET'])
+@app.route('/linx/login', methods=['GET'])
 def login():
     return render_template('login.html', next=request.args['next'])
 
 
-@linx.route('/login', methods=['POST'])
+@app.route('/linx/login', methods=['POST'])
 def do_login():
     username = request.form['username']
     password = request.form['password']
@@ -222,13 +217,13 @@ def do_login():
     return render_template('login.html', next=next, username=username)
 
 
-@linx.route('/logout', methods=['GET'])
+@app.route('/linx/logout', methods=['GET'])
 def logout():
     logout_user();
     return redirect(url_for('.index'))
 
 
-@linx.route('/links', methods=['GET'])
+@app.route('/linx/links', methods=['GET'])
 @login_required
 def link_list():
     links = None
@@ -240,7 +235,7 @@ def link_list():
     return jsonify(links=[{'id': l['id'], 'title': l['title'], 'url': l['url'], 'abstract': l['abstract'], 'tags': l['tags'].split('|')} for l in links])
 
 
-@linx.route('/links', methods=['POST'])
+@app.route('/linx/links', methods=['POST'])
 @login_required
 def link_create():
     title = request.form['title']
@@ -267,8 +262,8 @@ def link_create():
     return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
-@linx.route('/links/new', methods=['GET'])
-@linx.route('/links/<int:id>', methods=['GET'])
+@app.route('/linx/links/new', methods=['GET'])
+@app.route('/linx/links/<int:id>', methods=['GET'])
 @login_required
 def link_retrieve(id=0):
     link = None
@@ -280,7 +275,7 @@ def link_retrieve(id=0):
     return render_template('link.html', link=link)    
 
 
-@linx.route('/links/<int:id>', methods=['POST'])
+@app.route('/linx/links/<int:id>', methods=['POST'])
 @login_required
 def link_update(id):
     title = request.form['title']
@@ -296,7 +291,7 @@ def link_update(id):
     return jsonify({'id': id, 'title': title, 'url': url, 'abstract': abstract, 'tags': tags})
 
 
-@linx.route('/links/<int:id>', methods=['DELETE'])
+@app.route('/linx/links/<int:id>', methods=['DELETE'])
 @login_required
 def link_delete(id):
     with get_connection() as conn:
@@ -313,7 +308,7 @@ def link_delete(id):
     return '', 204
 
 
-@linx.route('/tags')
+@app.route('/linx/tags')
 @login_required
 def tags():
     with get_connection() as conn:
@@ -329,7 +324,7 @@ def tags():
     return jsonify(tags=tags_processed)
 
 
-@linx.route('/manage-tags')
+@app.route('/linx/manage-tags')
 @login_required
 def manage_tags():
     with get_connection() as conn:
@@ -341,7 +336,7 @@ def manage_tags():
     return render_template('manage_tags.html', tags=tags)
 
 
-@linx.route('/manage-tags-update', methods=['POST'])
+@app.route('/linx/manage-tags-update', methods=['POST'])
 @login_required
 def manage_tags_update():
     with get_connection() as conn:
@@ -366,12 +361,9 @@ def manage_tags_update():
     return redirect(url_for('manage_tags'))
 
 
-@linx.route('/robots.txt')
+@app.route('/robots.txt')
 def static_from_root():
-    return send_from_directory(linx.static_folder, request.path[1:])
-
-
-app.register_blueprint(linx, url_prefix='/linx')
+    return send_from_directory(app.static_folder, request.path[1:])
 
 
 if __name__ == '__main__':
