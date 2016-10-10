@@ -11,6 +11,7 @@ from flask.ext.login import LoginManager, current_user, login_required, \
      login_user, logout_user, UserMixin, confirm_login, fresh_login_required
 from contextlib import contextmanager
 from passlib.hash import sha512_crypt
+from flask_sslify import SSLify
 
 
 def get_connection():
@@ -66,6 +67,7 @@ def process_tag_data_string(data_string):
 
 # Set up application
 app = Flask(__name__)
+sslify = SSLify(app)
 
 # Load configuration
 app.config.from_pyfile('config.cfg')
