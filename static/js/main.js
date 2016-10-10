@@ -9,7 +9,7 @@ var tags = new Bloodhound({
     prefetch: {
         // Currently this just reloads all tags on every page refresh
         thumbprint: new Date().getTime(),
-        url: '/tags',
+        url: _URL_PREFIX + '/tags',
         filter: function(data) {
             return data.tags;
         }
