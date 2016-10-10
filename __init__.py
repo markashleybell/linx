@@ -7,7 +7,7 @@ from tornado.ioloop import IOLoop
 
 from flask import Flask, Blueprint, render_template, request, send_from_directory, \
      redirect, url_for, jsonify, flash
-from flask.ext.login import LoginManager, current_user, login_required, \
+from flask_login import LoginManager, current_user, login_required, \
      login_user, logout_user, UserMixin, confirm_login, fresh_login_required
 from contextlib import contextmanager
 from passlib.hash import sha512_crypt
