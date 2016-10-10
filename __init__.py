@@ -66,7 +66,7 @@ def process_tag_data_string(data_string):
 
 
 # Set up application
-app = Flask(__name__)
+app = Flask(__name__, static_url_path ='/linx/static')
 sslify = SSLify(app)
 
 # Load configuration
