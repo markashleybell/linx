@@ -25,8 +25,8 @@ def get_connection():
 def unique_substrings(s):
     """Return all unique substrings of a string with length >= 2"""
     seen = set()
-    for k in xrange(2, len(s)+1):
-        for i in xrange(len(s)-k+1):
+    for k in range(2, len(s)+1):
+        for i in range(len(s)-k+1):
             result = s[i:i+k]
             if result not in seen:
                 seen.add(result)
@@ -92,7 +92,7 @@ def view_helpers():
         if minpage != 1:
             output.extend(['1', '...'])
 
-        output.extend([str(i) for i in range(minpage, maxpage + 1)])
+        # output.extend([str(i) for i in range(minpage, maxpage + 1)])
 
         if maxpage != total_pages:
             output.extend(['...', str(total_pages)])
@@ -171,7 +171,7 @@ def index(page=1):
     # If any tags were passed in as a query
     if query is not None:
         # Try and tidy up the tag query terms a bit
-        query_terms = [s.lower().strip() for s in query.split('|') if s.strip() is not '']
+        query_terms = [s.lower().strip() for s in query.split('|') if s.strip() != '']
         # Use the query SQL
         sql = query_sql
         params = (current_user.id, tuple(query_terms), len(query_terms), offset, pagesize)
@@ -250,7 +250,7 @@ def link_create():
         cur.execute('SELECT COUNT(id) AS count FROM links WHERE url = %s AND user_id = %s', (url, current_user.id)) 
         exists = int(cur.fetchone()['count'])
         # If there is, return an error message
-        if exists is not 0:
+        if exists != 0:
             return jsonify({'error': 'This url has already been bookmarked.'})
 
 
@@ -299,7 +299,7 @@ def link_delete(id):
         # Check that the current user owns the link we're going to delete
         cur.execute('SELECT COUNT(id) AS count FROM links WHERE id = %s AND user_id = %s', (id, current_user.id)) 
         exists = int(cur.fetchone()['count'])
-        if exists is not 0:
+        if exists != 0:
             cur.execute('DELETE FROM tags_links WHERE link_id = %s', (id))
             cur.execute('DELETE FROM links WHERE id = %s AND user_id = %s', (id, current_user.id))
             conn.commit()
@@ -367,8 +367,8 @@ def static_from_root():
 
 
 if __name__ == '__main__':
-    # app.run(debug=True, threaded=True)
-    http_server = HTTPServer(WSGIContainer(app))
-    http_server.listen(os.environ['HTTP_PLATFORM_PORT'])
-    loop = IOLoop.instance()
-    loop.start()
+    app.run()
+    # http_server = HTTPServer(WSGIContainer(app))
+    # http_server.listen(os.environ['HTTP_PLATFORM_PORT'])
+    # loop = IOLoop.instance()
+    # loop.start()

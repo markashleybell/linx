@@ -5,10 +5,10 @@ args = sys.argv
 
 hash = sha512_crypt.encrypt(args[1])
 
-print hash
+print(hash)
 
 ok = sha512_crypt.verify(args[1], hash)
 
-print ok
+print(ok)
 
 os.system('echo ' + hash + '| clip')
