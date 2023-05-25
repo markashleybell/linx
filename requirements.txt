@@ -3,4 +3,4 @@ Flask-Login==0.5.0
 Flask-SSLify==0.1.5
 passlib==1.7.4
 pymssql==2.1.5
-tornado==6.1
+tornado==6.3.2
